@@ -942,7 +942,7 @@
                         console.log("NEIGHBORS_URL: " + "NOT FOUND")
                 }
                 $.get(neighbors_url, function (data, status) {
-                    neighbors = data.neighbors;
+                    neighbors = data;
                     if (chosenData == "Population Data") {
                         legend.addTo(map);
                         ref._div.innerHTML = '<h4>Population Data</h4>' + (props ?
