@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+
+    <persistence-unit name="devPU">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.eagles.ElectionDataQuality.Entity.Coordinates</class>
+        <class>com.eagles.ElectionDataQuality.Entity.Correction</class>
+        <class>com.eagles.ElectionDataQuality.Entity.Demographics</class>
+        <class>com.eagles.ElectionDataQuality.Entity.District</class>
+        <class>com.eagles.ElectionDataQuality.Entity.ElectionData</class>
+        <class>com.eagles.ElectionDataQuality.Entity.Error</class>
+        <class>com.eagles.ElectionDataQuality.Entity.NationalPark</class>
+        <class>com.eagles.ElectionDataQuality.Entity.Precinct</class>
+        <class>com.eagles.ElectionDataQuality.Entity.State</class>
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://mysql3.cs.stonybrook.edu:3306/supaul"/>
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="javax.persistence.jdbc.user" value=""/>
+            <property name="javax.persistence.jdbc.password" value=""/>
+            <property name="eclipselink.ddl-generation" value="none"/>
+        </properties>
+    </persistence-unit>
+</persistence>

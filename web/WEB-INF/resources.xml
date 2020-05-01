@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <Resource id="myDS-Name" type="javax.sql.DataSource">
+        JtaManaged = true
+        DataSourceCreator = tomcat
+
+        validationQuery = SELECT 1
+        initialSize = 2
+        removeAbandoned = true
+        removeAbandonedTimeout = 120
+
+        driverClassName = com.mysql.cj.jdbc.Driver
+        url = jdbc:mysql://mysql3.cs.stonybrook.edu:3306/
+        username = supaul
+        password = 110128153
+    </Resource>
+</resources>
