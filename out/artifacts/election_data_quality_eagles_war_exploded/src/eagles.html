@@ -1137,18 +1137,18 @@
                 for(error of data[i].errorIdentifier){
                     if(error.includes("_presidential_2016")){
                         if(error.includes(election)){
-                            label = label + error.replace(/_/g, " ");
+                            label = label + error.replace(/_/g, " ") + "<br>";
                         }
                     }else if(error.includes("_congressional_2016")){
                         if(error.includes(election)){
-                            label = label + error.replace(/_/g, " ");
+                            label = label + error.replace(/_/g, " ") + "<br>";
                         }
                     }else if(error.includes("_congressional_2018")){
                         if(error.includes(election)){
-                            label = label + error.replace(/_/g, " ");
+                            label = label + error.replace(/_/g, " ") + "<br>";
                         }
-                    }else{
-                        label = label + error.replace(/_/g, " ");
+                    }else if (error.includes("zero_population")){
+                        label = label + error.replace(/_/g, " ") + "<br>";
                     }
                 }
             } else if (errorType == "enclosed") {
@@ -1246,17 +1246,17 @@
                 if(error.includes("presidential 2016")){
                     document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
                         error.substring(6, error.indexOf(":")) + "<br>" +
-                        "There is no votes for the 2016 Presidential Election.";
+                        "There are no votes for the 2016 Presidential Election.";
                 }
                 else if(error.includes("congressional 2016")){
                     document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
                         error.substring(6, error.indexOf(":")) + "<br>" +
-                        "There is no votes for the 2016 Congressional Election.";
+                        "There are no votes for the 2016 Congressional Election.";
                 }
                 else if(error.includes("congressional 2018")){
                     document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
                         error.substring(6, error.indexOf(":")) + "<br>" +
-                        "There is no votes for the 2018 Congressional Election.";
+                        "There are no votes for the 2018 Congressional Election.";
                 }
             }
             else if(error.includes("zero")){

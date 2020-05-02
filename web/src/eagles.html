@@ -1133,58 +1133,67 @@
 
         for (i in data) {
             let label = "Error " + i + ":<br>";
+            let unchanged = true;
             if (errorType == "anomalous") {
                 for(error of data[i].errorIdentifier){
                     if(error.includes("_presidential_2016")){
                         if(error.includes(election)){
                             label = label + error.replace(/_/g, " ") + "<br>";
+                            unchanged = false;
                         }
                     }else if(error.includes("_congressional_2016")){
                         if(error.includes(election)){
                             label = label + error.replace(/_/g, " ") + "<br>";
+                            unchanged = false;
                         }
                     }else if(error.includes("_congressional_2018")){
                         if(error.includes(election)){
                             label = label + error.replace(/_/g, " ") + "<br>";
+                            unchanged = false;
                         }
-                    }else{
+                    }else if (error.includes("zero_population")){
                         label = label + error.replace(/_/g, " ") + "<br>";
+                        unchanged = false;
                     }
                 }
             } else if (errorType == "enclosed") {
                 label = "Error " + i + ":<br>Enclosed precinct: " + data[i].enclosedPrecinct
                     + ", enclosing precinct: " + data[i].enclosingPrecinct;
+                unchanged = false;
+
             } else if (errorType == "overlapping") {
                 label = data[i].precinct + " is overlapped by: " + data[i].overlappingPrecincts[0];
+                unchanged = false;
             }
-
-            try {
-                console.log(label);
-                temp = L.geoJson({
-                    "type": data[i].coordinates.type,
-                    "coordinates": data[i].coordinates.coordinates
-                });
-
-                markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
-                // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
-                marker = new L.Marker(markerLocation).on('click', function(e) {
-                    markerDeselect();
-                    markerClick(e);
-                });
-
-                marker.bindTooltip(label,
-                    {
-                        permanent: true,
-                        direction: 'right'
+            if (!unchanged) {
+                try {
+                    console.log(label);
+                    temp = L.geoJson({
+                        "type": data[i].coordinates.type,
+                        "coordinates": data[i].coordinates.coordinates
                     });
 
-                label = "";
-                marker.addTo(markers);
-                map.addLayer(marker);
-                // map.addLayer(marker).on('click', markerClick());
-                markers.addTo(map);
-            } catch (e) {
-                continue;
+                    markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
+                    // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
+                    marker = new L.Marker(markerLocation).on('click', function (e) {
+                        markerDeselect();
+                        markerClick(e);
+                    });
+
+                    marker.bindTooltip(label,
+                        {
+                            permanent: true,
+                            direction: 'right'
+                        });
+
+                    label = "";
+                    marker.addTo(markers);
+                    map.addLayer(marker);
+                    // map.addLayer(marker).on('click', markerClick());
+                    markers.addTo(map);
+                } catch (e) {
+                    continue;
+                }
             }
         }
     }
@@ -1221,49 +1230,43 @@
     function getErrorInfo(error) {
         let dropdown = document.getElementById("correction-list");
         let chosenCorrection = dropdown.options[dropdown.selectedIndex].text;
-
+        let str = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
         console.log(error);
 
         if (chosenCorrection == "Show anomalous errors") {
             if(error.includes("excess")){
                 if(error.includes("presidential 2016")){
-                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                        error.substring(6, error.indexOf(":")) + "<br>" +
+                    str += "<br>" +
                         "The number of votes is greater than the population number for the 2016 Presidential Election. ";
                 }
-                else if(error.includes("congressional 2016")){
-                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                        error.substring(6, error.indexOf(":")) + "<br>" +
+                if(error.includes("congressional 2016")){
+                    str += "<br>" +
                         "The number of votes is greater than the population number for the 2016 Congressional Election. ";
                 }
-                else if(error.includes("congressional 2018")){
-                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                        error.substring(6, error.indexOf(":")) + "<br>" +
+                if(error.includes("congressional 2018")){
+                    str += "<br>" +
                         "The number of votes is greater than the population number for the 2018 Congressional Election. ";
                 }
             }
-            else if(error.includes("no voting")){
+            if(error.includes("no voting")){
                 if(error.includes("presidential 2016")){
-                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                        error.substring(6, error.indexOf(":")) + "<br>" +
+                    str += "<br>" +
                         "There are no votes for the 2016 Presidential Election.";
                 }
-                else if(error.includes("congressional 2016")){
-                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                        error.substring(6, error.indexOf(":")) + "<br>" +
+                if(error.includes("congressional 2016")){
+                    str += "<br>" +
                         "There are no votes for the 2016 Congressional Election.";
                 }
-                else if(error.includes("congressional 2018")){
-                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                        error.substring(6, error.indexOf(":")) + "<br>" +
+                if(error.includes("congressional 2018")){
+                    str += + "<br>" +
                         "There are no votes for the 2018 Congressional Election.";
                 }
             }
-            else if(error.includes("zero")){
-                document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
-                    error.substring(6, error.indexOf(":")) + "<br>" +
+            if(error.includes("zero")){
+                str += "<br>" +
                     "There is no population in this precinct.";
             }
+            document.getElementById('ErrorSelected').innerHTML = str;
         } else if (chosenCorrection == "Show enclosed precincts") {
             document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
         } else if (chosenCorrection == "Show overlapping precincts") {
