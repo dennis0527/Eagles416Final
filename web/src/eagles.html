@@ -88,6 +88,7 @@
                             </div>
                             <p></p>
                             <p id="ErrorSelected"><b>Error Selected: </b>None</p>
+                            <button type="button" class="btn btn-info pull-left" onclick = markerDeselect()>Remove Error Selection</button>
                         </div>
                     </div>
                     <br>
@@ -289,6 +290,7 @@
     let nationalParksData;
     let nationalParksLayer;
     let nationalParksJson;
+    let selectedError;
     $('#loader').addClass("loader").removeClass("hide-loader");
     $.get("http://localhost:8080/election_data_quality_eagles_war_exploded/app/", function (data, status) {
         mapData = data;
@@ -1074,101 +1076,212 @@
         For now for GUI Demo this is fine.
      */
 
-        let markers = new L.FeatureGroup();
+    let markers = new L.FeatureGroup();
 
-        function changeCorrection() {
-            let e = document.getElementById("correction-list");
-            let chosenCorrection = e.options[e.selectedIndex].text;
-            e = document.getElementById("correction-election");
-            let chosenElection = e.options[e.selectedIndex].text;
-            e = document.getElementById("correction-state");
-            let chosenState = e.options[e.selectedIndex].text;
+    function changeCorrection() {
+        let e = document.getElementById("correction-list");
+        let chosenCorrection = e.options[e.selectedIndex].text;
+        e = document.getElementById("correction-election");
+        let chosenElection = e.options[e.selectedIndex].text;
+        e = document.getElementById("correction-state");
+        let chosenState = e.options[e.selectedIndex].text;
 
-            let election = "";
-            let url = "";
-            let state = "";
+        let election = "";
+        let url = "";
 
-            if (chosenElection == "2016 Presidential Election") {
-                election = "_pres_16";
-            } else if (chosenElection == "2016 Congressional Election") {
-                election = "_congress_16";
-            } else if (chosenElection == "2018 Congressional Election") {
-                election = "_congress_18";
-            }
-
-            if (chosenCorrection == "Show anomalous errors") {
-                url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AnomalousError/" + chosenState;
-
-                $.get(url, function (data, status) {
-                    createErrorMarkers(data.anomalousPrecincts, election, "anomalous");
-                });
-            } else if (chosenCorrection == "Show enclosed precincts") {
-                url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/EnclosedPrecinctError/" + chosenState;
-
-                $.get(url, function (data, status) {
-                    createErrorMarkers(data.enclosedPrecincts, election, "enclosed");
-                });
-            } else if (chosenCorrection == "Show overlapping precincts") {
-                url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/OverlappingPrecinctError/" + chosenState;
-                $.get(url, function (data, status) {
-                    createErrorMarkers(data.overlappingPrecincts, election, "overlapping");
-                });
-            } else {
-                map.removeLayer(markers);
-            }
+        if (chosenElection == "2016 Presidential Election") {
+            election = "_presidential_2016";
+        } else if (chosenElection == "2016 Congressional Election") {
+            election = "_congressional_2016";
+        } else if (chosenElection == "2018 Congressional Election") {
+            election = "_congressional_2018";
         }
 
-        function createErrorMarkers(data, election, errorType) {
-            markers.clearLayers();
-            let temp;
-            let markerLocation;
-            let marker;
-            let label = "";
+        if (chosenCorrection == "Show anomalous errors") {
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AnomalousError/" + chosenState;
 
-            for (i in data) {
-                if (errorType == "anomalous") {
-                    if ((data[i].errorIdentifier).includes(election)) {
+            $.get(url, function (data, status) {
+                createErrorMarkers(data.anomalousPrecincts, election, "anomalous");
+            });
+        } else if (chosenCorrection == "Show enclosed precincts") {
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/EnclosedPrecinctError/" + chosenState;
 
-                    } else {
-                        continue;
+            $('#loader').addClass("loader").removeClass("hide-loader");
+            $.get(url, function (data, status) {
+                createErrorMarkers(data.enclosedPrecincts, election, "enclosed");
+                $('#loader').addClass("hide-loader").removeClass("loader");
+            });
+        } else if (chosenCorrection == "Show overlapping precincts") {
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/OverlappingPrecinctError/" + chosenState;
+
+            $('#loader').addClass("loader").removeClass("hide-loader");
+            $.get(url, function (data, status) {
+                createErrorMarkers(data.overlappingPrecincts, election, "overlapping");
+                $('#loader').addClass("hide-loader").removeClass("loader");
+            });
+        } else {
+            map.removeLayer(markers);
+        }
+    }
+
+    function createErrorMarkers(data, election, errorType) {
+        markers.clearLayers();
+        let temp;
+        let markerLocation;
+        let marker;
+        console.log(election);
+
+        for (i in data) {
+            let label = "Error " + i + ":<br>";
+            if (errorType == "anomalous") {
+                for(error of data[i].errorIdentifier){
+                    if(error.includes("_presidential_2016")){
+                        if(error.includes(election)){
+                            label = label + error.replace(/_/g, " ") + "<br>";
+                        }
+                    }else if(error.includes("_congressional_2016")){
+                        if(error.includes(election)){
+                            label = label + error.replace(/_/g, " ") + "<br>";
+                        }
+                    }else if(error.includes("_congressional_2018")){
+                        if(error.includes(election)){
+                            label = label + error.replace(/_/g, " ") + "<br>";
+                        }
+                    }else{
+                        label = label + error.replace(/_/g, " ") + "<br>";
                     }
-                    label = data[i].errorIdentifier.replace(/_/g, " ");
-
-                } else if (errorType == "enclosed") {
-                    label = "Enclosed precinct: " + data[i].enclosedPrecinct
-                        + ", enclosing precinct: " + data[i].enclosingPrecinct;
-                } else if (errorType == "overlapping") {
-                    label = data[i].precinct + " is overlapped by: " + data[i].overlappingPrecincts[0];
                 }
+            } else if (errorType == "enclosed") {
+                label = "Error " + i + ":<br>Enclosed precinct: " + data[i].enclosedPrecinct
+                    + ", enclosing precinct: " + data[i].enclosingPrecinct;
+            } else if (errorType == "overlapping") {
+                label = data[i].precinct + " is overlapped by: " + data[i].overlappingPrecincts[0];
+            }
 
-                try {
-                    temp = L.geoJson({
-                        "type": data[i].coordinates.type,
-                        "coordinates": data[i].coordinates.coordinates
+            try {
+                console.log(label);
+                temp = L.geoJson({
+                    "type": data[i].coordinates.type,
+                    "coordinates": data[i].coordinates.coordinates
+                });
+
+                markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
+                // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
+                marker = new L.Marker(markerLocation).on('click', function(e) {
+                    markerDeselect();
+                    markerClick(e);
+                });
+
+                marker.bindTooltip(label,
+                    {
+                        permanent: true,
+                        direction: 'right'
                     });
 
-                    markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
-                    marker = new L.Marker(markerLocation).on('click', markerClick);
-
-                    marker.bindTooltip(label,
-                        {
-                            permanent: true,
-                            direction: 'right'
-                        });
-
-                    marker.addTo(markers);
-                    map.addLayer(marker).on('click', markerClick);
-                    markers.addTo(map);
-                } catch (e) {
-                    continue;
-                }
+                label = "";
+                marker.addTo(markers);
+                map.addLayer(marker);
+                // map.addLayer(marker).on('click', markerClick());
+                markers.addTo(map);
+            } catch (e) {
+                continue;
             }
         }
+    }
 
-        function markerClick(e) {
-            map.flyTo(e.latlng, 10);
+    let goldIcon = new L.Icon({
+        iconUrl: 'img/marker-icon-2x-gold.png',
+        shadowUrl: 'img/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    let blueIcon = new L.Icon({
+        iconUrl: 'img/marker-icon-2x-blue.png',
+        shadowUrl: 'img/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    function markerClick(e) {
+        map.flyTo(e.latlng, 10);
+        selectedError = e.target;
+        let errorString = selectedError.getTooltip().getContent();
+        selectedError.getTooltip().setContent("<b>" + errorString + "</b>");
+        selectedError.setIcon(goldIcon);
+        // document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + errorString.substring(6, errorString.indexOf(":"));
+        getErrorInfo(errorString);
+
+    }
+
+    function getErrorInfo(error) {
+        let dropdown = document.getElementById("correction-list");
+        let chosenCorrection = dropdown.options[dropdown.selectedIndex].text;
+
+        console.log(error);
+
+        if (chosenCorrection == "Show anomalous errors") {
+            if(error.includes("excess")){
+                if(error.includes("presidential 2016")){
+                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                        error.substring(6, error.indexOf(":")) + "<br>" +
+                        "The number of votes is greater than the population number for the 2016 Presidential Election. ";
+                }
+                else if(error.includes("congressional 2016")){
+                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                        error.substring(6, error.indexOf(":")) + "<br>" +
+                        "The number of votes is greater than the population number for the 2016 Congressional Election. ";
+                }
+                else if(error.includes("congressional 2018")){
+                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                        error.substring(6, error.indexOf(":")) + "<br>" +
+                        "The number of votes is greater than the population number for the 2018 Congressional Election. ";
+                }
+            }
+            else if(error.includes("no voting")){
+                if(error.includes("presidential 2016")){
+                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                        error.substring(6, error.indexOf(":")) + "<br>" +
+                        "There are no votes for the 2016 Presidential Election.";
+                }
+                else if(error.includes("congressional 2016")){
+                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                        error.substring(6, error.indexOf(":")) + "<br>" +
+                        "There are no votes for the 2016 Congressional Election.";
+                }
+                else if(error.includes("congressional 2018")){
+                    document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                        error.substring(6, error.indexOf(":")) + "<br>" +
+                        "There are no votes for the 2018 Congressional Election.";
+                }
+            }
+            else if(error.includes("zero")){
+                document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" +
+                    error.substring(6, error.indexOf(":")) + "<br>" +
+                    "There is no population in this precinct.";
+            }
+        } else if (chosenCorrection == "Show enclosed precincts") {
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
+        } else if (chosenCorrection == "Show overlapping precincts") {
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
+        } else {
+            return;
+        }
+    }
+
+    function markerDeselect() {
+        if (!(document.getElementById('ErrorSelected').innerHTML === "<b>Error Selected: </b>None")) {
+            let errorString = selectedError.getTooltip().getContent();
+            selectedError.getTooltip().setContent(errorString.substring(3, errorString.indexOf("</b>")));
+            selectedError.setIcon(blueIcon);
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>None";
         }
 
+    }
         function addNationalParkLayer() {
 
             if (document.getElementById("NationalParksCheck").checked) {
