@@ -1,5 +1,7 @@
 package com.eagles.ElectionDataQuality.PersistenceLayer;
 
+import com.eagles.ElectionDataQuality.Entity.AnomalousErrors;
+import com.eagles.ElectionDataQuality.Entity.Coordinates;
 import com.eagles.ElectionDataQuality.Entity.NationalPark;
 import com.eagles.ElectionDataQuality.Entity.State;
 import org.json.simple.JSONArray;
@@ -63,13 +65,37 @@ public class PersistenceLayer {
         return "none";
     }
 
-    public static String getAnomalousErrors(String stateName) {
-        EntityManager em = getEntityManagerInstance();
-        if (stateName.equalsIgnoreCase("Maryland")) {
-            State state = em.find(State.class, "state_MD");
-            return state.getAnomalousErrors();
+    public static String getAnomalousErrors(String stateName){
+        try {
+            InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
+            props.load(is);
+            EntityManager em = getEntityManagerInstance();
+            Query query = em.createQuery("Select e from AnomalousErrors e WHERE e.stateName = \"" + stateName + "\"");
+            List<AnomalousErrors> anomalousErrors = (List<AnomalousErrors>) query.getResultList();
+            JSONParser parser = new JSONParser();
+            JSONObject skeleton =  (JSONObject) parser.parse(props.getProperty("anomalousErrors"));
+            JSONArray anomalousPrecincts = (JSONArray)skeleton.get("anomalousPrecincts");
+
+            for(AnomalousErrors e : anomalousErrors){
+                JSONObject individualPrecinct = (JSONObject) parser.parse(props.getProperty("individualAnomalousPrecincts"));
+                individualPrecinct.put("errorId", e.getId());
+                individualPrecinct.put("errorIdentifier", e.getErrorIdentifier());
+                individualPrecinct.put("stateName", e.getStateName());
+                individualPrecinct.put("precinctName", e.getPrecinctName());
+                Query coordinatesQuery = em.createQuery("Select c from Coordinates c WHERE c.canonicalName = \""
+                        + e.getPrecinctName() + "\"");
+                Coordinates coords = (Coordinates)coordinatesQuery.getSingleResult();
+                JSONObject coordinates = (JSONObject)parser.parse(coords.getCoords());
+                coordinates.put("type", coords.getPolygonType());
+                individualPrecinct.put("coordinates", coordinates);
+                anomalousPrecincts.add(individualPrecinct);
+            }
+
+            return skeleton.toJSONString();
+
+        } catch (Exception e) {
+            return e.getMessage();
         }
-        return "";
     }
 
     public static String getEnclosedPrecinctErrors(String stateName) {

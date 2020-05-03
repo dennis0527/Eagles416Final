@@ -12,6 +12,7 @@ public class Coordinates {
     private NationalPark nationalParkByCanonicalName;
     private Precinct precinctByCanonicalName;
     private State stateByCanonicalName;
+    private String polygonType;
 
     @Id
     @Column(name = "canonical_name", nullable = false, length = 45)
@@ -81,5 +82,15 @@ public class Coordinates {
 
     public void setStateByCanonicalName(State stateByCanonicalName) {
         this.stateByCanonicalName = stateByCanonicalName;
+    }
+
+    @Basic
+    @Column(name = "polygon_type", nullable = true, length = 45)
+    public String getPolygonType() {
+        return polygonType;
+    }
+
+    public void setPolygonType(String polygonType) {
+        this.polygonType = polygonType;
     }
 }
