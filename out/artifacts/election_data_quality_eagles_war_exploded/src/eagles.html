@@ -82,8 +82,10 @@
                                     <option value="2">Show open borders</option>
                                     <option value="3">Show enclosed precincts</option>
                                     <option value="4">Show gaps in precincts</option>
-                                    <option value="5">Show anomalous errors</option>
-                                    <option value="6">Show overlapping precincts</option>
+                                    <option value="5">Show precincts with zero population</option>
+                                    <option value="6">Show precincts with more votes tallied than population</option>
+                                    <option value="7">Show precincts with no voting data</option>
+                                    <option value="8">Show overlapping precincts</option>
                                 </select>
                             </div>
                             <p></p>
@@ -152,40 +154,40 @@
                                                     <span class="text-muted pull-right">
                                                         <small class="text-muted">25 min ago</small>
                                                     </span>
-                                                    <p>
-                                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                                        Lorem ipsum dolor sit amet.
-                                                    </p>
-                                                    </div>
-                                                </li>
-                                                <li class="media">
-                                                    <div class="media-body">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        Lorem ipsum dolor sit amet.
+                    </p>
+                </div>
+                </li>
+                <li class="media">
+                    <div class="media-body">
                                                       <span class="text-muted pull-right">
                                                           <small class="text-muted">30 min ago</small>
                                                       </span>
-                                                        <p>
-                                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                                            Lorem ipsum dolor adipiscing elit.
-                                                        </p>
-                                                    </div>
-                                                </li>
-                                                <li class="media">
-                                                    <div class="media-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                            Lorem ipsum dolor adipiscing elit.
+                        </p>
+                    </div>
+                </li>
+                <li class="media">
+                    <div class="media-body">
                                                         <span class="text-muted pull-right">
                                                             <small class="text-muted">48 min ago</small>
                                                         </span>
-                                                        <p>
-                                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                                        </p>
-                                                    </div>
-                                                </li>
-                                            </ul>
-                        </div>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        </p>
                     </div>
-                </div>
+                </li>
+                </ul>
             </div>
         </div>
-    </p>
+    </div>
+</div>
+</div>
+</p>
 </div>
 <div id="GhostPrecinctTab" class="tab-pane fade">
     <div id="InnerGhostPrecinct" style="display: none;">
@@ -273,9 +275,9 @@
 </div>
 <div>
     <div class="custom-control custom-checkbox" style="padding-left: 5px; padding-top: 15px;">
-            <input type="checkbox"   class="custom-control-input" id="NationalParksCheck"
-                   onclick="addNationalParkLayer()">
-            <label class="custom-control-label" for="NationalParksCheck">Show National Parks</label>
+                <input type="checkbox"   class="custom-control-input" id="NationalParksCheck"
+                       onclick="addNationalParkLayer()">
+                <label class="custom-control-label" for="NationalParksCheck">Show National Parks</label>
     </div>
 </div>
 
@@ -993,94 +995,95 @@
         }
     };
 
-        info.addTo(map);
+    info.addTo(map);
 
-        /* Key/legend to explain the colors */
-        let legend = L.control({position: 'bottomright'});
+    /* Key/legend to explain the colors */
+    let legend = L.control({position: 'bottomright'});
 
-        /* We make our control based on the population density and add labels for it */
-        legend.onAdd = function (map) {
+    /* We make our control based on the population density and add labels for it */
+    legend.onAdd = function (map) {
 
-            let div = L.DomUtil.create('div', 'info legend'),
-                grades,
-                labels = [];
+        let div = L.DomUtil.create('div', 'info legend'),
+            grades,
+            labels = [];
 
-            if (statesToggle) {
-                grades = [0, 300, 400, 500];
-                for (let i = 0; i < grades.length; i++) {
-                    div.innerHTML +=
-                        '<i style="background:' + statePopColor((grades[i] + 1)) + '"></i> ' +
-                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-                }
+        if (statesToggle) {
+            grades = [0, 300, 400, 500];
+            for (let i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + statePopColor((grades[i] + 1)) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
             }
-            if (congressToggle) {
-                grades = [0, 1000, 2000, 3000, 4000, 5000, 10000, 20000];
-                for (let i = 0; i < grades.length; i++) {
-                    div.innerHTML +=
-                        '<i style="background:' + congressPopColor((grades[i] + 1)) + '"></i> ' +
-                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-                }
+        }
+        if (congressToggle) {
+            grades = [0, 1000, 2000, 3000, 4000, 5000, 10000, 20000];
+            for (let i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + congressPopColor((grades[i] + 1)) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
             }
-
-            if (precinctToggle) {
-                grades = [0, 1000, 2000, 3000, 4000, 5000, 10000, 20000];
-                for (let i = 0; i < grades.length; i++) {
-                    div.innerHTML +=
-                        '<i style="background:' + precinctPopColor((grades[i] + 1)) + '"></i> ' +
-                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-                }
-            }
-
-            // loop through our density intervals and generate a label with a colored square for each interval
-
-            return div;
-        };
-
-        function changeStateView() {
-            let e = document.getElementById("state_change");
-            let chosenState = e.options[e.selectedIndex].text;
-            if (chosenState == "Florida") {
-                map.flyTo([27.66, -81.5], 6);
-            } else if (chosenState == "Maryland") {
-                map.flyTo([39.04, -76.64], 7.5);
-            } else if (chosenState == "New York") {
-                map.flyTo([43.3, -74.21], 6.5);
-            } else if (chosenState == "U.S. Map") {
-                map.flyTo([37.8, -96], 4);
-            }
-
         }
 
-        /*
-    For the demo: Clears out the textarea when the comment is submitted, and shows a popup confirming comment
-    was posted.
-    */
-        function clearCommentTextArea() {
-            alert("Comment submitted");
-            document.getElementById("Comment-TextArea").value = '';
+        if (precinctToggle) {
+            grades = [0, 1000, 2000, 3000, 4000, 5000, 10000, 20000];
+            for (let i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + precinctPopColor((grades[i] + 1)) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
         }
 
-        function correctionSubmitted() {
-            document.getElementById("correction-state").selectedIndex = 0
-            document.getElementById("correction-precinct").selectedIndex = 0
-            document.getElementById("correction-election").selectedIndex = 0
-            document.getElementById("correction-list").selectedIndex = 0
-            map.removeLayer(markers);
+        // loop through our density intervals and generate a label with a colored square for each interval
 
-            alert("Correction submitted");
+        return div;
+    };
+
+    function changeStateView() {
+        let e = document.getElementById("state_change");
+        let chosenState = e.options[e.selectedIndex].text;
+        if (chosenState == "Florida") {
+            map.flyTo([27.66, -81.5], 6);
+        } else if (chosenState == "Maryland") {
+            map.flyTo([39.04, -76.64], 7.5);
+        } else if (chosenState == "New York") {
+            map.flyTo([43.3, -74.21], 6.5);
+        } else if (chosenState == "U.S. Map") {
+            map.flyTo([37.8, -96], 4);
         }
 
-        /* If the chosen correction is fix overlapping precincts then pop-up a marker to one that I found. */
-        /* TODO: Make this dynamic if we keep this. Thinking of making a markers array that has a value
-        for what kind of error it is and then it would show all markers with that error when you switch it.
-        For now for GUI Demo this is fine.
-     */
+    }
+
+    /*
+For the demo: Clears out the textarea when the comment is submitted, and shows a popup confirming comment
+was posted.
+*/
+    function clearCommentTextArea() {
+        alert("Comment submitted");
+        document.getElementById("Comment-TextArea").value = '';
+    }
+
+    function correctionSubmitted() {
+        document.getElementById("correction-state").selectedIndex = 0
+        document.getElementById("correction-precinct").selectedIndex = 0
+        document.getElementById("correction-election").selectedIndex = 0
+        document.getElementById("correction-list").selectedIndex = 0
+        map.removeLayer(markers);
+
+        alert("Correction submitted");
+    }
+
+    /* If the chosen correction is fix overlapping precincts then pop-up a marker to one that I found. */
+    /* TODO: Make this dynamic if we keep this. Thinking of making a markers array that has a value
+    for what kind of error it is and then it would show all markers with that error when you switch it.
+    For now for GUI Demo this is fine.
+ */
 
     let markers = new L.FeatureGroup();
 
     function changeCorrection() {
         let e = document.getElementById("correction-list");
         let chosenCorrection = e.options[e.selectedIndex].text;
+        console.log(e.selectedIndex)
         e = document.getElementById("correction-election");
         let chosenElection = e.options[e.selectedIndex].text;
         e = document.getElementById("correction-state");
@@ -1097,7 +1100,7 @@
             election = "_congressional_2018";
         }
 
-        if (chosenCorrection == "Show anomalous errors") {
+        if (e.selectedIndex == "5" || e.selectedIndex == "6" || e.selectedIndex == "7") {
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AnomalousError/" + chosenState;
 
             $.get(url, function (data, status) {
@@ -1132,68 +1135,64 @@
         console.log(election);
 
         for (i in data) {
-            let label = "Error " + i + ":<br>";
-            let unchanged = true;
+            let label = "Error " + i.errorId + ":<br>";
             if (errorType == "anomalous") {
-                for(error of data[i].errorIdentifier){
-                    if(error.includes("_presidential_2016")){
-                        if(error.includes(election)){
-                            label = label + error.replace(/_/g, " ") + "<br>";
-                            unchanged = false;
-                        }
-                    }else if(error.includes("_congressional_2016")){
-                        if(error.includes(election)){
-                            label = label + error.replace(/_/g, " ") + "<br>";
-                            unchanged = false;
-                        }
-                    }else if(error.includes("_congressional_2018")){
-                        if(error.includes(election)){
-                            label = label + error.replace(/_/g, " ") + "<br>";
-                            unchanged = false;
-                        }
-                    }else if (error.includes("zero_population")){
-                        label = label + error.replace(/_/g, " ") + "<br>";
-                        unchanged = false;
-                    }
+                if(i.errorIdentifier.includes("_presidential_2016")){
+                    label = label + error.replace(/_/g, " ") + "<br>";
                 }
-            } else if (errorType == "enclosed") {
-                label = "Error " + i + ":<br>Enclosed precinct: " + data[i].enclosedPrecinct
-                    + ", enclosing precinct: " + data[i].enclosingPrecinct;
-                unchanged = false;
-
-            } else if (errorType == "overlapping") {
-                label = data[i].precinct + " is overlapped by: " + data[i].overlappingPrecincts[0];
-                unchanged = false;
+                else if(i.errorIdentifier.includes("_congressional_2016")){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                }
+                else if(i.errorIdentifier.includes("_congressional_2018")){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                }
+                else if (i.errorIdentifier.includes("zero_population")){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                }
+                temp = L.geoJson({
+                    "type": i.coordinates.type,
+                    "coordinates": i.coordinates.coordinates
+                });
             }
-            if (!unchanged) {
-                try {
-                    console.log(label);
-                    temp = L.geoJson({
-                        "type": data[i].coordinates.type,
-                        "coordinates": data[i].coordinates.coordinates
+            else if (errorType == "enclosed") {
+                label = "Error " + i + ":<br>Enclosed precinct: " + data[i].enclosedPrecinct
+                    + ", Enclosing precinct: " + data[i].enclosingPrecinct;
+                temp = L.geoJson({
+                    "type": data[i].coordinates.type,
+                    "coordinates": data[i].coordinates.coordinates
+                });
+            }
+            else if (errorType == "overlapping") {
+                label = data[i].precinct + " is overlapping with " + data[i].overlappingPrecincts[0];
+                temp = L.geoJson({
+                    "type": data[i].coordinates.type,
+                    "coordinates": data[i].coordinates.coordinates
+                });
+            }
+            try {
+                console.log(label);
+
+
+                markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
+                // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
+                marker = new L.Marker(markerLocation).on('click', function (e) {
+                    markerDeselect();
+                    markerClick(e);
+                });
+
+                marker.bindTooltip(label,
+                    {
+                        permanent: true,
+                        direction: 'right'
                     });
 
-                    markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
-                    // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
-                    marker = new L.Marker(markerLocation).on('click', function (e) {
-                        markerDeselect();
-                        markerClick(e);
-                    });
-
-                    marker.bindTooltip(label,
-                        {
-                            permanent: true,
-                            direction: 'right'
-                        });
-
-                    label = "";
-                    marker.addTo(markers);
-                    map.addLayer(marker);
-                    // map.addLayer(marker).on('click', markerClick());
-                    markers.addTo(map);
-                } catch (e) {
-                    continue;
-                }
+                label = "";
+                marker.addTo(markers);
+                map.addLayer(marker);
+                // map.addLayer(marker).on('click', markerClick());
+                markers.addTo(map);
+            } catch (e) {
+                continue;
             }
         }
     }
@@ -1285,26 +1284,26 @@
         }
 
     }
-        function addNationalParkLayer() {
+    function addNationalParkLayer() {
 
-            if (document.getElementById("NationalParksCheck").checked) {
-                $.get("http://localhost:8080/election_data_quality_eagles_war_exploded/app/NationalParks/", function (data, status) {
-                    nationalParksData = data;
-                    // ADD THE NATIONAL PARKS LAYER
-                    nationalParksLayer = L.layerGroup().addTo(map);
-                    nationalParksJson = L.geoJson(nationalParksData).addTo(nationalParksLayer);
-                    nationalParksJson = L.geoJson(nationalParksData, {
-                        style: styleNationalParks,
-                        onEachFeature: onEachFeature
-                    }).addTo(mapLayers);
-                });
-            } else {
-                map.removeLayer(nationalParksJson);
-                map.removeLayer(nationalParksLayer);
-
-            }
+        if (document.getElementById("NationalParksCheck").checked) {
+            $.get("http://localhost:8080/election_data_quality_eagles_war_exploded/app/NationalParks/", function (data, status) {
+                nationalParksData = data;
+                // ADD THE NATIONAL PARKS LAYER
+                nationalParksLayer = L.layerGroup().addTo(map);
+                nationalParksJson = L.geoJson(nationalParksData).addTo(nationalParksLayer);
+                nationalParksJson = L.geoJson(nationalParksData, {
+                    style: styleNationalParks,
+                    onEachFeature: onEachFeature
+                }).addTo(mapLayers);
+            });
+        } else {
+            map.removeLayer(nationalParksJson);
+            map.removeLayer(nationalParksLayer);
 
         }
+
+    }
 
 
 </script>
