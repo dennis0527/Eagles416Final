@@ -1,11 +1,9 @@
 package com.eagles.ElectionDataQuality.Handler;
 
 import com.eagles.ElectionDataQuality.PersistenceLayer.PersistenceLayer;
-import org.json.simple.parser.ParseException;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.awt.*;
-import java.io.IOException;
 
 
 // The Java class will be hosted at the URI path "/app"
@@ -61,6 +59,22 @@ public class AppHandler {
     @Path("OverlappingPrecinctError/{stateName}")
     public String getOverlapPrecinctErrors(@PathParam("stateName") String state) {
         return DatabaseSimulator.getOverlappingPrecinctErrors(state);
+    }
+
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("AddNeighbors/{stateName}/{precinctName1}/{precinctName2}")
+    public String addPrecinctNeighbors(@PathParam("precinctName1") String precinctName1, @PathParam("precinctName2") String precinctName2,
+                                       @PathParam("stateName") String state) {
+        return PersistenceLayer.addNeighbors(state, precinctName1, precinctName2);
+    }
+
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("RemoveNeighbors/{stateName}/{precinctName1}/{precinctName2}")
+    public String removePrecinctNeighbors(@PathParam("precinctName1") String precinctName1, @PathParam("precinctName2") String precinctName2,
+                                       @PathParam("stateName") String state) {
+        return PersistenceLayer.removeNeighbors(state, precinctName1, precinctName2);
     }
 
     @GET

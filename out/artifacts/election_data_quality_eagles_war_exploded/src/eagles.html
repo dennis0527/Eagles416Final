@@ -41,7 +41,7 @@
                 <li><a data-toggle="pill" href="#CommentsTab">Comments</a></li>
                 <li><a data-toggle="pill" href="#GhostPrecinctTab">Add Ghost Precinct</a></li>
                 <li><a data-toggle="pill" href="#CombinePrecinctTab">Combine Precincts</a></li>
-                <li><a data-toggle="pill" href="#AddPrecinctTab">Add Precinct Edges</a></li>
+                <li><a data-toggle="pill" href="#AddPrecinctTab">Add/Delete Neighbors</a></li>
             </ul>
             <div class="tab-content">
                 <div id="CorrectionsTab" class="tab-pane fade in active">
@@ -83,7 +83,7 @@
                                     <option value="3">Show enclosed precincts</option>
                                     <option value="4">Show gaps in precincts</option>
                                     <option value="5">Show precincts with zero population</option>
-                                    <option value="6">Show precincts with more votes tallied than population</option>
+                                    <option value="6">Show precincts with an excess of voters</option>
                                     <option value="7">Show precincts with no voting data</option>
                                     <option value="8">Show overlapping precincts</option>
                                 </select>
@@ -218,8 +218,11 @@
         <p>Click on two precincts and then press the submit button to add precinct graph edges.</p>
         <p id="AddPrecinctNameOne"><b>First Precinct Selected: </b>None</p>
         <p id="AddPrecinctNameTwo"><b>Second Precinct Selected: </b>None</p>
-        <button id="AddPrecinctButton" type="button" class="btn btn-info pull-center" onclick=submitAddPrecinct()>
-            Submit
+        <button id="AddPrecinctButton" type="button" class="btn btn-info pull-center" onclick=submitAddPrecinct(0)>
+            Add
+        </button>
+        <button id="RemovePrecinctButton" type="button" class="btn btn-info pull-center" onclick=submitAddPrecinct(1)>
+            Remove
         </button>
     </div>
     <h3 id="WarningAddPrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
@@ -570,18 +573,18 @@
 
     function getPrecinctName(e) {
         let layer = e.target;
-        document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>" + layer.feature.properties.NAME; // pass this to the html elements we need
+        document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>" + layer.feature.properties.CANON_NAME; // pass this to the html elements we need
         if (document.getElementById('CombinePrecinctNameOne').innerHTML == "<b>First Precinct Selected: </b>None") {
-            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.NAME;
+            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.CANON_NAME;
         } else {
             document.getElementById('CombinePrecinctNameTwo').innerHTML = (document.getElementById('CombinePrecinctNameOne').innerHTML).replace("First", "Second");
-            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.NAME;
+            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.CANON_NAME;
         }
         if (document.getElementById('AddPrecinctNameOne').innerHTML == "<b>First Precinct Selected: </b>None") {
-            document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.NAME;
+            document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.CANON_NAME;
         } else {
             document.getElementById('AddPrecinctNameTwo').innerHTML = (document.getElementById('AddPrecinctNameOne').innerHTML).replace("First", "Second");
-            document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.NAME;
+            document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.CANON_NAME;
         }
     }
 
@@ -618,17 +621,41 @@
         }
     }
 
-    function submitAddPrecinct() {
+    function submitAddPrecinct(spec) {
+        let e = document.getElementById("state_change");
+        let chosenState = e.options[e.selectedIndex].text;
+        let url = "";
+
+        if(spec == 0){
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AddNeighbors/" + chosenState + "/" +
+                (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
+                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
+
+            alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
+                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were made into neighbors");
+
+        }else{
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/RemoveNeighbors/" + chosenState + "/" +
+                (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
+                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
+
+            alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
+                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " are no longer neighbors");
+
+        }
+
         if (document.getElementById('AddPrecinctNameTwo').innerHTML == "<b>Second Precinct Selected: </b>None") {
             alert("Please select both precincts");
         } else {
-            alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
-                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were made into neighbors");
+
+            console.log(url);
+
+            $.post(url, function (data, status) {
+                alert(status);
+            });
+
             document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
             document.getElementById('AddPrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
-            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
-            document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
-            document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
 
         }
     }
@@ -1083,7 +1110,7 @@ was posted.
     function changeCorrection() {
         let e = document.getElementById("correction-list");
         let chosenCorrection = e.options[e.selectedIndex].text;
-        console.log(e.selectedIndex)
+        let index = e.selectedIndex
         e = document.getElementById("correction-election");
         let chosenElection = e.options[e.selectedIndex].text;
         e = document.getElementById("correction-state");
@@ -1100,7 +1127,8 @@ was posted.
             election = "_congressional_2018";
         }
 
-        if (e.selectedIndex == "5" || e.selectedIndex == "6" || e.selectedIndex == "7") {
+        if (index == 5 || index == 6 || index == 7) {
+            console.log("HERE\n\n\n")
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AnomalousError/" + chosenState;
 
             $.get(url, function (data, status) {
@@ -1119,7 +1147,7 @@ was posted.
 
             $('#loader').addClass("loader").removeClass("hide-loader");
             $.get(url, function (data, status) {
-                createErrorMarkers(data.overlappingPrecincts, election, "overlapping");
+                createErrorMarkers(data.features, election, "overlapping");
                 $('#loader').addClass("hide-loader").removeClass("loader");
             });
         } else {
@@ -1134,68 +1162,79 @@ was posted.
         let marker;
         console.log(election);
 
+        let e = document.getElementById("correction-list");
+        let chosenCorrection = e.options[e.selectedIndex].text;
+        console.log(chosenCorrection);
         for (i in data) {
-            let label = "Error " + i.errorId + ":<br>";
+            let label = "Error " + i + ":<br>";
+            let unchanged = true;
+            let error;
             if (errorType == "anomalous") {
-                if(i.errorIdentifier.includes("_presidential_2016")){
-                    label = label + error.replace(/_/g, " ") + "<br>";
-                }
-                else if(i.errorIdentifier.includes("_congressional_2016")){
-                    label = label + error.replace(/_/g, " ") + "<br>";
-                }
-                else if(i.errorIdentifier.includes("_congressional_2018")){
-                    label = label + error.replace(/_/g, " ") + "<br>";
-                }
-                else if (i.errorIdentifier.includes("zero_population")){
-                    label = label + error.replace(/_/g, " ") + "<br>";
-                }
-                temp = L.geoJson({
-                    "type": i.coordinates.type,
-                    "coordinates": i.coordinates.coordinates
-                });
+                error = data[i].errorIdentifier;
             }
-            else if (errorType == "enclosed") {
+            if (errorType == "anomalous" && chosenCorrection.includes(error.substring(0, error.indexOf("_")))) {
+                if(error.includes("_presidential_2016") && error.includes(election)){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                    unchanged = false;
+                }else if(error.includes("_congressional_2016") && error.includes(election)){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                    unchanged = false;
+                }else if(error.includes("_congressional_2018") && error.includes(election)){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                    unchanged = false;
+                }else if (error.includes("zero_population")){
+                    label = label + error.replace(/_/g, " ") + "<br>";
+                    unchanged = false;
+                }
+            } else if (errorType == "enclosed") {
                 label = "Error " + i + ":<br>Enclosed precinct: " + data[i].enclosedPrecinct
-                    + ", Enclosing precinct: " + data[i].enclosingPrecinct;
-                temp = L.geoJson({
-                    "type": data[i].coordinates.type,
-                    "coordinates": data[i].coordinates.coordinates
-                });
+                    + ", enclosing precinct: " + data[i].enclosingPrecinct;
+                unchanged = false;
+
+            } else if (errorType == "overlapping") {
+                label = data[i].properties.CANON_NAME_1 + " is overlapped by: " + data[i].properties.CANON_NAME_2;
+                unchanged = false;
             }
-            else if (errorType == "overlapping") {
-                label = data[i].precinct + " is overlapping with " + data[i].overlappingPrecincts[0];
-                temp = L.geoJson({
-                    "type": data[i].coordinates.type,
-                    "coordinates": data[i].coordinates.coordinates
-                });
-            }
-            try {
-                console.log(label);
-
-
-                markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
-                // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
-                marker = new L.Marker(markerLocation).on('click', function (e) {
-                    markerDeselect();
-                    markerClick(e);
-                });
-
-                marker.bindTooltip(label,
-                    {
-                        permanent: true,
-                        direction: 'right'
+            if (!unchanged) {
+                try {
+                    console.log(label);
+                    if (errorType == "overlapping") {
+                        temp = L.geoJson({
+                            "type": "MultiPolygon",
+                            "coordinates": data[i].geometry.coordinates
+                        });
+                    }
+                    else {
+                        temp = L.geoJson({
+                            "type": data[i].coordinates.type,
+                            "coordinates": data[i].coordinates.coordinates
+                        });
+                    }
+                    markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
+                    // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
+                    marker = new L.Marker(markerLocation).on('click', function (e) {
+                        markerDeselect();
+                        markerClick(e);
                     });
 
-                label = "";
-                marker.addTo(markers);
-                map.addLayer(marker);
-                // map.addLayer(marker).on('click', markerClick());
-                markers.addTo(map);
-            } catch (e) {
-                continue;
+                    marker.bindTooltip(label,
+                        {
+                            permanent: true,
+                            direction: 'right'
+                        });
+
+                    label = "";
+                    marker.addTo(markers);
+                    map.addLayer(marker);
+                    // map.addLayer(marker).on('click', markerClick());
+                    markers.addTo(map);
+                } catch (e) {
+                    continue;
+                }
             }
         }
     }
+
 
     let goldIcon = new L.Icon({
         iconUrl: 'img/marker-icon-2x-gold.png',
@@ -1229,10 +1268,11 @@ was posted.
     function getErrorInfo(error) {
         let dropdown = document.getElementById("correction-list");
         let chosenCorrection = dropdown.options[dropdown.selectedIndex].text;
+        let index = dropdown.selectedIndex;
         let str = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
         console.log(error);
 
-        if (chosenCorrection == "Show anomalous errors") {
+        if (index == 5 || index == 6 || index == 7) {
             if(error.includes("excess")){
                 if(error.includes("presidential 2016")){
                     str += "<br>" +

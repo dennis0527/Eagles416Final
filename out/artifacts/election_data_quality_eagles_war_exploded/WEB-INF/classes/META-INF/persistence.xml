@@ -4,7 +4,7 @@
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
              version="2.2">
 
-    <persistence-unit name="devPU">
+    <persistence-unit name="devPU" transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>com.eagles.ElectionDataQuality.Entity.Coordinates</class>
         <class>com.eagles.ElectionDataQuality.Entity.Correction</class>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <Resource id="myDS-Name" type="javax.sql.DataSource">
-        JtaManaged = true
+        JtaManaged = false
         DataSourceCreator = tomcat
 
         validationQuery = SELECT 1

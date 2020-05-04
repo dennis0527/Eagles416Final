@@ -54,26 +54,25 @@ public class DatabaseSimulator {
 
     }
 
-
     public static String getOverlappingPrecinctErrors(String stateName) {
         JSONParser parser = new JSONParser();
+        InputStream fileName = null;
+        if (stateName.equals("Maryland")) {
+
+        }
+        else if (stateName.equals("Florida")) {
+            fileName = DatabaseSimulator.class.getClassLoader().getResourceAsStream("fl_overlapping.json");
+        }
+        else if (stateName.equals("New York")) {
+        }
         try {
-            System.out.println("get overlapping precinct errors");
-            Reader reader = null;
-            if (stateName.equals("Maryland")) {
-
-            }
-            else if (stateName.equals("Florida")) {
-                reader = new FileReader("");
-            }
-            else if (stateName.equals("New York")) {
-                reader = new FileReader("");
-            }
+            Reader reader = new InputStreamReader(fileName);
             JSONObject jsonObject = (JSONObject) parser.parse(reader);
-
-            return jsonObject.toString();
+            String result = "";
+            result = jsonObject.toString();
+            return result;
         } catch (Exception e) {
-            System.out.println("\n\n\n\n" + e.toString());
+            System.out.println("\n\n\n\n\n" + e.toString());
             return e.toString();
         }
     }
