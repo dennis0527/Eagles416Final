@@ -77,6 +77,13 @@ public class AppHandler {
         return PersistenceLayer.removeNeighbors(state, precinctName1, precinctName2);
     }
 
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("MergePrecincts/{precinctName1}/{precinctName2}")
+    public String mergePrecincts(@PathParam("precinctName1") String precinctName1, @PathParam("precinctName2") String precinctName2) {
+        return PersistenceLayer.mergePrecincts(precinctName1, precinctName2);
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("NationalParks")

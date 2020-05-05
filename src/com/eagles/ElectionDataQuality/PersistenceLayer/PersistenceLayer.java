@@ -5,8 +5,12 @@ import com.eagles.ElectionDataQuality.Entity.Coordinates;
 import com.eagles.ElectionDataQuality.Entity.NationalPark;
 import com.eagles.ElectionDataQuality.Entity.Precinct;
 import com.eagles.ElectionDataQuality.Entity.State;
+import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.io.geojson.GeoJsonReader;
+import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -15,10 +19,12 @@ import javax.persistence.Query;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.util.*;
+import helpers.MergePrecinctHelpers;
 
 public class PersistenceLayer {
     private static Properties props = new Properties();
     private static String propFileName = "config.properties";
+    private static MergePrecinctHelpers mergeHelpers = new MergePrecinctHelpers();
 
     public static String getStatesJson() {
         try{
@@ -134,6 +140,52 @@ public class PersistenceLayer {
         em.getTransaction().commit();
 
         return "SUCCESS REMOVE";
+    }
+
+    public static String mergePrecincts(String precinct1, String precinct2){
+        EntityManager em = getEntityManagerInstance();
+        JSONParser parser = new JSONParser();
+        GeoJsonReader reader = new GeoJsonReader();
+
+        Query p1Query = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct1 + "\"");
+        Precinct p1 = (Precinct) p1Query.getSingleResult();
+        String p1Geojson = p1.getGeojson();
+
+        Query p2Query = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
+        Precinct p2 = (Precinct) p2Query.getSingleResult();
+        String p2Geojson = p2.getGeojson();
+
+        //em.joinTransaction();
+
+        try{
+            JSONObject p1JSON =  (JSONObject) parser.parse(p1Geojson);
+            JSONObject p1Coords = (JSONObject) p1JSON.get("geometry");
+
+            JSONObject p2JSON =  (JSONObject) parser.parse(p2Geojson);
+            JSONObject p2Coords = (JSONObject) p2JSON.get("geometry");
+
+            Geometry p1Geom = reader.read(p1Coords.toJSONString());
+            Geometry p2Geom = reader.read(p2Coords.toJSONString());
+
+            p1Geom = mergeHelpers.validate(p1Geom);
+            p2Geom = mergeHelpers.validate(p2Geom);
+
+            Polygon p1Polygon = new GeometryFactory().createPolygon(p1Geom.getCoordinates());
+            Polygon p2Polygon = new GeometryFactory().createPolygon(p2Geom.getCoordinates());
+
+            Geometry union = p1Polygon.union(p2Polygon);
+            Coordinate[] unionCoordinates = union.getCoordinates();
+
+            String json = mergeHelpers.createCoordsJson(unionCoordinates);
+
+            System.out.println(json);
+        }catch(Exception e){
+            System.out.println(e);
+        }
+
+        //em.flush();
+
+        return "SUCCESS MERGE";
     }
 
     public static String getAnomalousErrors(String stateName){

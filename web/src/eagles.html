@@ -40,7 +40,7 @@
                 <li><a data-toggle="pill" href="#HistoryTab">Correction History</a></li>
                 <li><a data-toggle="pill" href="#CommentsTab">Comments</a></li>
                 <li><a data-toggle="pill" href="#GhostPrecinctTab">Add Ghost Precinct</a></li>
-                <li><a data-toggle="pill" href="#CombinePrecinctTab">Combine Precincts</a></li>
+                <li><a data-toggle="pill" href="#MergePrecinctTab">Merge Precincts</a></li>
                 <li><a data-toggle="pill" href="#AddPrecinctTab">Add/Delete Neighbors</a></li>
             </ul>
             <div class="tab-content">
@@ -200,14 +200,14 @@
     </div>
     <h3 id="WarningGhostPrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
-<div id="CombinePrecinctTab" class="tab-pane fade">
+<div id="MergePrecinctTab" class="tab-pane fade">
     <div id="InnerCombinePrecinct" style="display: none;">
-        <h3>Combine two precincts</h3>
-        <p>Click on two precincts and then press the submit button to combine two precincts.</p>
+        <h3>Merge two precincts</h3>
+        <p>Click on two precincts and then press the submit button to merge two precincts.</p>
         <p id="CombinePrecinctNameOne"><b>First Precinct Selected: </b>None</p>
         <p id="CombinePrecinctNameTwo"><b>Second Precinct Selected: </b>None</p>
         <button id="CombinePrecinctButton" type="button" class="btn btn-info pull-center"
-                onclick=submitCombinePrecinct()>Submit
+                onclick=submitMergePrecinct()>Submit
         </button>
     </div>
     <h3 id="WarningCombinePrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
@@ -283,8 +283,6 @@
                 <label class="custom-control-label" for="NationalParksCheck">Show National Parks</label>
     </div>
 </div>
-
-<script type="text/javascript" src="marker.js"></script>
 
 <!-- <div id = "label"><button onclick="addMarker();">toggle marker mode</button></div>
 <div id = "affiliation"><button onclick="affiliation();">toggle affiliation highlight</button></div> -->
@@ -588,11 +586,6 @@
         }
     }
 
-    function getErrorName(e) {
-        let layer = e.target;
-        document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + layer.feature.properties.errorIdentifier;
-    }
-
     function submitGhostPrecinct() {
         if (document.getElementById('GhostPrecinctName').innerHTML == "<b>Precinct Selected: </b>None") {
             alert("Please select a precinct");
@@ -606,18 +599,22 @@
         }
     }
 
-    function submitCombinePrecinct() {
+    function submitMergePrecinct() {
         if (document.getElementById('CombinePrecinctNameTwo').innerHTML == "<b>Second Precinct Selected: </b>None") {
             alert("Please select both precincts");
         } else {
+            let url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/MergePrecincts/" +
+                (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
+                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
+
+            $.post(url, function (data, status) {
+                alert(status);
+            });
+
             alert((document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
                 (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were combined");
             document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
             document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
-            document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
-            document.getElementById('AddPrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
-            document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
-
         }
     }
 
