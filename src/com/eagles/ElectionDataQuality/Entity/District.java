@@ -13,7 +13,6 @@ public class District {
     private Demographics demographicsByCanonicalName;
     private Coordinates coordinatesByCanonicalName;
     private ElectionData electionDataByCanonicalName;
-    private Collection<Precinct> precinctsByCanonicalName;
 
     @Id
     @Column(name = "canonical_name", nullable = false, length = 45)
@@ -88,12 +87,4 @@ public class District {
         this.electionDataByCanonicalName = electionDataByCanonicalName;
     }
 
-    @OneToMany(mappedBy = "districtByCanonicalDistrictName")
-    public Collection<Precinct> getPrecinctsByCanonicalName() {
-        return precinctsByCanonicalName;
-    }
-
-    public void setPrecinctsByCanonicalName(Collection<Precinct> precinctsByCanonicalName) {
-        this.precinctsByCanonicalName = precinctsByCanonicalName;
-    }
 }

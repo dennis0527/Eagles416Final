@@ -11,7 +11,6 @@ public class Precinct {
     private String fullName;
     private String neighbors;
     private String canonicalStateName;
-    private String canonicalDistrictName;
     private Collection<Correction> correctionsByCanonicalName;
     private Demographics demographicsByCanonicalName;
     private ElectionData electionDataByCanonicalName;
@@ -19,7 +18,6 @@ public class Precinct {
     private Coordinates coordinatesByCanonicalName;
     private String geojson;
     private State stateByCanonicalStateName;
-    private District districtByCanonicalDistrictName;
 
     @Id
     @Column(name = "canonical_name", nullable = false, length = 45)
@@ -61,16 +59,6 @@ public class Precinct {
         this.canonicalStateName = canonicalStateName;
     }
 
-    @Basic
-    @Column(name = "canonical_district_name", nullable = true, length = 45)
-    public String getCanonicalDistrictName() {
-        return canonicalDistrictName;
-    }
-
-    public void setCanonicalDistrictName(String canonicalDistrictName) {
-        this.canonicalDistrictName = canonicalDistrictName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -79,13 +67,12 @@ public class Precinct {
         return Objects.equals(canonicalName, precinct.canonicalName) &&
                 Objects.equals(fullName, precinct.fullName) &&
                 Objects.equals(neighbors, precinct.neighbors) &&
-                Objects.equals(canonicalStateName, precinct.canonicalStateName) &&
-                Objects.equals(canonicalDistrictName, precinct.canonicalDistrictName);
+                Objects.equals(canonicalStateName, precinct.canonicalStateName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(canonicalName, fullName, neighbors, canonicalStateName, canonicalDistrictName);
+        return Objects.hash(canonicalName, fullName, neighbors, canonicalStateName);
     }
 
     @OneToMany(mappedBy = "precinctByCanonicalPrecinctName")
@@ -154,13 +141,4 @@ public class Precinct {
         this.stateByCanonicalStateName = stateByCanonicalStateName;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "canonical_district_name", referencedColumnName = "canonical_name", insertable = false, updatable = false)
-    public District getDistrictByCanonicalDistrictName() {
-        return districtByCanonicalDistrictName;
-    }
-
-    public void setDistrictByCanonicalDistrictName(District districtByCanonicalDistrictName) {
-        this.districtByCanonicalDistrictName = districtByCanonicalDistrictName;
-    }
 }

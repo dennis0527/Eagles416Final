@@ -250,14 +250,23 @@ public class PersistenceLayer {
         }
     }
 
-    public static String getPrecinctData(String stateName){
+    public static String getPrecinctsData(String stateName){
 
         try {
             InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
             props.load(is);
-            EntityManager entityManager = getEntityManagerInstance();
+            EntityManager em = getEntityManagerInstance();
+            String state = props.getProperty(stateName);
+            Query query = em.createQuery("Select p.geojson from Precinct p where p.canonicalStateName = \"" + state + "\"");
+            List<String> precincts = (List<String>) query.getResultList();
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(props.getProperty("skeleton"));
+            JSONArray features = (JSONArray) json.get("features");
+            for(String geojson : precincts){
+                features.add(parser.parse(geojson));
+            }
+            return json.toJSONString();
 
-            return "";
         } catch (Exception e) {
             e.printStackTrace();
             return null;

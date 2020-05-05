@@ -23,7 +23,7 @@ public class AppHandler {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/Precinct/{stateName}")
     public String getPrecinctData(@PathParam("stateName") String name) {
-        return DatabaseSimulator.getPrecinctJson(name.replaceAll("%20", " "));
+        return PersistenceLayer.getPrecinctsData(name.replaceAll("%20", " "));
     }
 
     @GET
