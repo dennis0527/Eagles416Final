@@ -8,32 +8,16 @@ import com.eagles.ElectionDataQuality.Entity.State;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
-import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 import java.io.InputStream;
 import java.util.*;
 
-@Stateless
-@TransactionManagement(TransactionManagementType.BEAN)
 public class PersistenceLayer {
     private static Properties props = new Properties();
     private static String propFileName = "config.properties";
 
-    @Resource
-    public static UserTransaction utx;
-
-    @Resource
-    public static SessionContext sessionContext;
 
 
     public static String getStatesJson() {
@@ -84,27 +68,31 @@ public class PersistenceLayer {
         Precinct p2 = (Precinct) query2.getSingleResult();
 
         try{
-            em.getTransaction().begin();
 
             JSONParser parser = new JSONParser();
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
+            if (p1Neighbors.toString().contains(precinct2)) {
+                return "Error: Already neighbors";
+            }
             p1Neighbors.add(p2.getCanonicalName());
 
             JSONObject p2JSON =  (JSONObject) parser.parse(p2.getNeighbors());
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
+            if (p2Neighbors.toString().contains(precinct1)) {
+                return "Error: Already neighbors";
+            }
             p2Neighbors.add(p1.getCanonicalName());
-
+            em.getTransaction().begin();
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
-
             em.flush();
             em.getTransaction().commit();
         }catch(Exception e){
             System.out.print(e);
         }
 
-        return "SUCCESS ADD";
+        return "Success: neighbors were added";
     }
 
     public static String removeNeighbors(String stateName, String precinct1, String precinct2){
@@ -117,16 +105,23 @@ public class PersistenceLayer {
         Precinct p2 = (Precinct) query2.getSingleResult();
 
         try{
-            em.getTransaction().begin();
 
             JSONParser parser = new JSONParser();
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
+            if (!p1Neighbors.toString().contains(precinct2)) {
+                return "Error: Precincts were not neighbors";
+            }
             p1Neighbors.remove(p2.getCanonicalName());
 
             JSONObject p2JSON =  (JSONObject) parser.parse(p2.getNeighbors());
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
+            if (!p2Neighbors.toString().contains(precinct1)) {
+                return "Error: Precincts were not neighbors";
+            }
             p2Neighbors.remove(p1.getCanonicalName());
+
+            em.getTransaction().begin();
 
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
@@ -138,7 +133,7 @@ public class PersistenceLayer {
 
         }
 
-        return "SUCCESS REMOVE";
+        return "Success: Neighbors were added";
     }
 
     public static String getAnomalousErrors(String stateName){
