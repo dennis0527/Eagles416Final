@@ -12,8 +12,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
@@ -25,6 +23,8 @@ public class PersistenceLayer {
     private static Properties props = new Properties();
     private static String propFileName = "config.properties";
     private static MergePrecinctHelpers mergeHelpers = new MergePrecinctHelpers();
+
+
 
     public static String getStatesJson() {
         try{
@@ -73,29 +73,32 @@ public class PersistenceLayer {
         Query query2 = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
         Precinct p2 = (Precinct) query2.getSingleResult();
 
-        em.joinTransaction();
-
         try{
+
             JSONParser parser = new JSONParser();
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
+            if (p1Neighbors.toString().contains(precinct2)) {
+                return "Error: Already neighbors";
+            }
             p1Neighbors.add(p2.getCanonicalName());
 
             JSONObject p2JSON =  (JSONObject) parser.parse(p2.getNeighbors());
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
+            if (p2Neighbors.toString().contains(precinct1)) {
+                return "Error: Already neighbors";
+            }
             p2Neighbors.add(p1.getCanonicalName());
-
+            em.getTransaction().begin();
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
+            em.flush();
+            em.getTransaction().commit();
         }catch(Exception e){
             System.out.print(e);
         }
 
-        em.persist(p1);
-        em.persist(p2);
-        em.flush();
-
-        return "SUCCESS ADD";
+        return "Success: neighbors were added";
     }
 
     public static String removeNeighbors(String stateName, String precinct1, String precinct2){
@@ -107,39 +110,36 @@ public class PersistenceLayer {
         Query query2 = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
         Precinct p2 = (Precinct) query2.getSingleResult();
 
-        System.out.println(p1.getNeighbors());
-        System.out.println(p2.getNeighbors());
-
-        em.joinTransaction();
-
         try{
+
             JSONParser parser = new JSONParser();
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
+            if (!p1Neighbors.toString().contains(precinct2)) {
+                return "Error: Precincts were not neighbors";
+            }
             p1Neighbors.remove(p2.getCanonicalName());
 
             JSONObject p2JSON =  (JSONObject) parser.parse(p2.getNeighbors());
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
+            if (!p2Neighbors.toString().contains(precinct1)) {
+                return "Error: Precincts were not neighbors";
+            }
             p2Neighbors.remove(p1.getCanonicalName());
 
-            System.out.println(p1JSON.toJSONString());
-            System.out.println(p2JSON.toJSONString());
+            em.getTransaction().begin();
 
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
 
-            System.out.println(p1.getNeighbors());
-            System.out.println(p2.getNeighbors());
+            em.getTransaction().commit();
         }catch(Exception e){
-            System.out.print(e);
+            System.out.println("\n\n" + e.getMessage() + "\n\n");
+            return e.getMessage();
+
         }
 
-        em.persist(p1);
-        em.persist(p2);
-        em.flush();
-        em.getTransaction().commit();
-
-        return "SUCCESS REMOVE";
+        return "Success: Neighbors were added";
     }
 
     public static String mergePrecincts(String precinct1, String precinct2){

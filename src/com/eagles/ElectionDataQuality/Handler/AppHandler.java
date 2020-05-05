@@ -74,7 +74,7 @@ public class AppHandler {
     @Path("RemoveNeighbors/{stateName}/{precinctName1}/{precinctName2}")
     public String removePrecinctNeighbors(@PathParam("precinctName1") String precinctName1, @PathParam("precinctName2") String precinctName2,
                                        @PathParam("stateName") String state) {
-        return PersistenceLayer.removeNeighbors(state, precinctName1, precinctName2);
+        return PersistenceLayer.removeNeighbors(state.replaceAll("%20", " "), precinctName1.replaceAll("%20", " "), precinctName2.replaceAll("%20", " "));
     }
 
     @POST

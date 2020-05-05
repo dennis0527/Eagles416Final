@@ -1,14 +1,12 @@
 package com.eagles.ElectionDataQuality.PersistenceLayer;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 public class PersistenceContextListener implements ServletContextListener {
-
+    @PersistenceUnit(unitName = "devPU")
     private EntityManagerFactory entityManagerFactory;
     private static ServletContext context;
 
