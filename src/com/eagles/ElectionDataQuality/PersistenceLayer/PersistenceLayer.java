@@ -8,17 +8,33 @@ import com.eagles.ElectionDataQuality.Entity.State;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 import java.io.InputStream;
 import java.util.*;
 
+@Stateless
+@TransactionManagement(TransactionManagementType.BEAN)
 public class PersistenceLayer {
     private static Properties props = new Properties();
     private static String propFileName = "config.properties";
+
+    @Resource
+    public static UserTransaction utx;
+
+    @Resource
+    public static SessionContext sessionContext;
+
 
     public static String getStatesJson() {
         try{
@@ -67,9 +83,9 @@ public class PersistenceLayer {
         Query query2 = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
         Precinct p2 = (Precinct) query2.getSingleResult();
 
-        em.joinTransaction();
-
         try{
+            em.getTransaction().begin();
+
             JSONParser parser = new JSONParser();
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
@@ -81,13 +97,12 @@ public class PersistenceLayer {
 
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
+
+            em.flush();
+            em.getTransaction().commit();
         }catch(Exception e){
             System.out.print(e);
         }
-
-        em.persist(p1);
-        em.persist(p2);
-        em.flush();
 
         return "SUCCESS ADD";
     }
@@ -101,12 +116,9 @@ public class PersistenceLayer {
         Query query2 = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
         Precinct p2 = (Precinct) query2.getSingleResult();
 
-        System.out.println(p1.getNeighbors());
-        System.out.println(p2.getNeighbors());
-
-        em.joinTransaction();
-
         try{
+            em.getTransaction().begin();
+
             JSONParser parser = new JSONParser();
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
@@ -116,22 +128,15 @@ public class PersistenceLayer {
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
             p2Neighbors.remove(p1.getCanonicalName());
 
-            System.out.println(p1JSON.toJSONString());
-            System.out.println(p2JSON.toJSONString());
-
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
 
-            System.out.println(p1.getNeighbors());
-            System.out.println(p2.getNeighbors());
+            em.getTransaction().commit();
         }catch(Exception e){
-            System.out.print(e);
-        }
+            System.out.println("\n\n" + e.getMessage() + "\n\n");
+            return e.getMessage();
 
-        em.persist(p1);
-        em.persist(p2);
-        em.flush();
-        em.getTransaction().commit();
+        }
 
         return "SUCCESS REMOVE";
     }
