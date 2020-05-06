@@ -155,7 +155,7 @@ public class PersistenceLayer {
         Precinct p2 = (Precinct) p2Query.getSingleResult();
         String p2Geojson = p2.getGeojson();
 
-        //em.joinTransaction();
+        em.getTransaction().begin();
 
         try{
             JSONObject p1JSON =  (JSONObject) parser.parse(p1Geojson);
@@ -178,12 +178,34 @@ public class PersistenceLayer {
 
             String json = mergeHelpers.createCoordsJson(unionCoordinates);
 
-            System.out.println(json);
+            System.out.println("Precinct 1 GeoJSON BEFORE: " + p1JSON.toJSONString());
+
+            JSONObject coordsJson = (JSONObject) parser.parse(json);
+
+            System.out.println("New coordinates: " + coordsJson.toJSONString());
+
+            p1JSON.remove("geometry");
+            p1JSON.put("geometry", coordsJson);
+
+            JSONObject p1Props = (JSONObject) p1JSON.get("properties");
+            JSONObject p2Props = (JSONObject) p2JSON.get("properties");
+
+            mergeHelpers.editProperties(p1Props, p2Props);
+
+            System.out.println("New JSON: " + p1JSON.toJSONString());
+
+            p1.setGeojson(p1JSON.toJSONString());
+
+            System.out.println("Precinct 1 GeoJSON AFTER: " + p1.getGeojson());
+
+            Query deleteQuery = em.createQuery("Delete from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
+            deleteQuery.executeUpdate();
+
         }catch(Exception e){
             System.out.println(e);
         }
 
-        //em.flush();
+        em.flush();
 
         return "SUCCESS MERGE";
     }

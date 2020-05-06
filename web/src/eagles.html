@@ -659,6 +659,7 @@
 
             $.post(url, function (data, status) {
                 alert(status);
+                alterStyleData();
             });
 
             alert((document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
