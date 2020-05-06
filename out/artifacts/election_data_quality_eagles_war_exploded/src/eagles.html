@@ -15,6 +15,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="src/Leaflet.Editable.js"></script>
 
     <script>
     </script>
@@ -41,7 +42,9 @@
                 <li><a data-toggle="pill" href="#CommentsTab">Comments</a></li>
                 <li><a data-toggle="pill" href="#GhostPrecinctTab">Add Ghost Precinct</a></li>
                 <li><a data-toggle="pill" href="#MergePrecinctTab">Merge Precincts</a></li>
+                <li><a data-toggle="pill" href="#ChangeBoundaryTab">Change Precinct Boundary</a></li>
                 <li><a data-toggle="pill" href="#AddPrecinctTab">Add/Delete Neighbors</a></li>
+
             </ul>
             <div class="tab-content">
                 <div id="CorrectionsTab" class="tab-pane fade in active">
@@ -212,6 +215,22 @@
     </div>
     <h3 id="WarningCombinePrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
+<!--dsaf-->
+<div id="ChangeBoundaryTab" class="tab-pane fade">
+    <div id="InnerChangePrecinctBoundary" style="display: none;">
+        <h3>Change the boundary of a precinct</h3>
+        <p>Click on one precinct and then press the change button to change its boundary.</p>
+        <p id="ChangePrecinctName"><b>Precinct Selected: </b>None</p>
+        <button id="ChangeBoundaryButton" type="button" class="btn btn-info pull-center"
+                onclick="loadBoundaryCoordinates()">Change Boundary
+        </button>
+        <button id="SubmitBoundaryButton" type="button" class="btn btn-info pull-center"
+                onclick="submitBoundaryCoordinates()">Submit Edited Boundary
+        </button>
+    </div>
+    <h3 id="WarningChangePrecinctBoundary" style="display: block;">Please select the precinct view to enable this option.</h3>
+</div>
+<!--adsfasd-->
 <div id="AddPrecinctTab" class="tab-pane fade">
     <div id="InnerAddPrecinct" style="display: none;">
         <h3>Add the graph edges of two precincts</h3>
@@ -294,6 +313,7 @@
     let nationalParksLayer;
     let nationalParksJson;
     let selectedError;
+    let polyline;
     $('#loader').addClass("loader").removeClass("hide-loader");
     $.get("http://localhost:8080/election_data_quality_eagles_war_exploded/app/", function (data, status) {
         mapData = data;
@@ -310,7 +330,10 @@
     });
 
     /* Create US map using leaflet api and us states data of coordinates */
-    let map = L.map('map').setView([37.8, -96], 4);
+    let map = L.map('map', {editable: true}).setView([37.8, -96], 4);
+
+    // let polyline = L.polyline([[43.1, 1.2], [43.2, 1.3],[43.3, 1.2]]).addTo(map);
+    // polyline.enableEdit();
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
         maxZoom: 18,
@@ -569,9 +592,37 @@
         })
     }
 
+    function loadBoundaryCoordinates() {
+        let iHTML = document.getElementById("ChangePrecinctName").innerHTML;
+        let precinctName = iHTML.substring(iHTML.indexOf("</b>") + 4);
+        let url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/" + precinctName + "/Coordinates";
+        $('#loader').addClass("loader").removeClass("hide-loader");
+        $.get(url, function (data, status) {
+            let numEmptyArrs = 0;
+            let arr = data.coordinates;
+            while (arr.length == 1) {
+                numEmptyArrs = numEmptyArrs + 1;
+                arr = arr[0];
+            }
+            let dataFixed = L.GeoJSON.coordsToLatLngs(data.coordinates, numEmptyArrs);
+            polyline = L.polyline(dataFixed, {color: 'black'}).addTo(map);
+            polyline.enableEdit();
+            map.fitBounds(polyline.getBounds());
+            $('#loader').addClass("hide-loader").removeClass("loader");
+        });
+    }
+
+    function submitBoundaryCoordinates() {
+        alert(L.GeoJSON.latLngsToCoords(polyline.toGeoJson()));
+        // alert(polyline.getLatLngs());
+
+    }
+
+
     function getPrecinctName(e) {
         let layer = e.target;
         document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>" + layer.feature.properties.CANON_NAME; // pass this to the html elements we need
+        document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>" + layer.feature.properties.CANON_NAME;
         if (document.getElementById('CombinePrecinctNameOne').innerHTML == "<b>First Precinct Selected: </b>None") {
             document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + layer.feature.properties.CANON_NAME;
         } else {
@@ -592,6 +643,7 @@
         } else {
             alert((document.getElementById('GhostPrecinctName').innerHTML).replace("<b>Precinct Selected: </b>", "") + " added as ghost precinct");
             document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
+            document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
             document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
             document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
@@ -613,6 +665,8 @@
 
             alert((document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
                 (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were combined");
+            document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
+            document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
             document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
         }
@@ -650,7 +704,8 @@
             $.post(url, function (data, status) {
                 alert(data);
             });
-
+            document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
+            document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
             document.getElementById('AddPrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
 
@@ -849,6 +904,8 @@
                 document.getElementById("WarningCombinePrecinct").style.display = "block";
                 document.getElementById("InnerAddPrecinct").style.display = "none";
                 document.getElementById("WarningAddPrecinct").style.display = "block";
+                document.getElementById("InnerChangePrecinctBoundary").style.display = "none";
+                document.getElementById("WarningChangePrecinctBoundary").style.display = "block";
                 break;
             case 'Congress':
                 statesToggle = 0;
@@ -860,6 +917,8 @@
                 document.getElementById("WarningCombinePrecinct").style.display = "block";
                 document.getElementById("InnerAddPrecinct").style.display = "none";
                 document.getElementById("WarningAddPrecinct").style.display = "block";
+                document.getElementById("InnerChangePrecinctBoundary").style.display = "none";
+                document.getElementById("WarningChangePrecinctBoundary").style.display = "block";
                 break;
             case 'Precinct':
                 statesToggle = 0;
@@ -871,6 +930,9 @@
                 document.getElementById("WarningCombinePrecinct").style.display = "none";
                 document.getElementById("InnerAddPrecinct").style.display = "block";
                 document.getElementById("WarningAddPrecinct").style.display = "none";
+                document.getElementById("InnerChangePrecinctBoundary").style.display = "block";
+                document.getElementById("WarningChangePrecinctBoundary").style.display = "none";
+
             default:
                 break;
         }

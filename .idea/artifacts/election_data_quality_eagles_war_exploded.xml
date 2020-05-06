@@ -17,6 +17,8 @@
           <element id="file-copy" path="$PROJECT_DIR$/lib/mysql-connector-java-8.0.19.jar" />
           <element id="file-copy" path="$USER_HOME$/Desktop/jts-1.14/lib/jts-1.14.jar" />
           <element id="file-copy" path="$USER_HOME$/Desktop/jts-1.14/lib/jtsio-1.14.jar" />
+          <element id="file-copy" path="$PROJECT_DIR$/lib/jtsio-1.14.jar" />
+          <element id="file-copy" path="$PROJECT_DIR$/lib/jts-1.14.jar" />
         </element>
       </element>
     </root>

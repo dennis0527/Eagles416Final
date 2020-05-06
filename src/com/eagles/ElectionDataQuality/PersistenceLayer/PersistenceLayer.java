@@ -273,7 +273,17 @@ public class PersistenceLayer {
         }
     }
 
-
+    public static String getPrecinctCoordinates(String precinctName){
+        try {
+            EntityManager em = getEntityManagerInstance();
+            Query query = em.createQuery("Select c.coords from Coordinates c WHERE c.canonicalName = \""
+                    + precinctName + "\"");
+            String coordinates = (String) query.getSingleResult();
+            return coordinates;
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
     private static EntityManager getEntityManagerInstance() {
         try {
             ServletContext context = PersistenceContextListener.getApplicationContext();

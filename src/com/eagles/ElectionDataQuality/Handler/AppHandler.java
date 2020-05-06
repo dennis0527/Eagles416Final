@@ -86,6 +86,13 @@ public class AppHandler {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("{precinctName}/Coordinates")
+    public String getCoordinates(@PathParam("precinctName") String precinctName){
+        return PersistenceLayer.getPrecinctCoordinates(precinctName);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("NationalParks")
     public String getNationalParks(){
         return PersistenceLayer.getNationalParks();
