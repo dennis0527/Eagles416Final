@@ -294,18 +294,34 @@ public class PersistenceLayer {
             return null;
         }
     }
+//
+//    public static String getPrecinctCoordinates(String precinctName){
+//        try {
+//            EntityManager em = getEntityManagerInstance();
+//            Query query = em.createQuery("Select c.coords from Coordinates c WHERE c.canonicalName = \""
+//                    + precinctName + "\"");
+//            String coordinates = (String) query.getSingleResult();
+//            return coordinates;
+//        } catch (Exception e) {
+//            return e.getMessage();
+//        }
+//    }
 
     public static String getPrecinctCoordinates(String precinctName){
         try {
             EntityManager em = getEntityManagerInstance();
-            Query query = em.createQuery("Select c.coords from Coordinates c WHERE c.canonicalName = \""
-                    + precinctName + "\"");
-            String coordinates = (String) query.getSingleResult();
-            return coordinates;
+            Query query = em.createQuery("Select p.geojson from Precinct p where p.canonicalName = \"" + precinctName + "\"");
+            JSONParser parser = new JSONParser();
+            JSONObject geoJson = (JSONObject) parser.parse((String) query.getSingleResult());
+            JSONObject geometry = (JSONObject) geoJson.get("geometry");
+            JSONArray coordinates = (JSONArray) geometry.get("coordinates");
+            return ((JSONObject) (parser.parse("{\"coordinates\" :" + coordinates.toJSONString() + "}"))).toJSONString();
+
         } catch (Exception e) {
             return e.getMessage();
         }
     }
+
     private static EntityManager getEntityManagerInstance() {
         try {
             ServletContext context = PersistenceContextListener.getApplicationContext();
