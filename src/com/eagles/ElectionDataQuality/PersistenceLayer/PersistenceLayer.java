@@ -295,6 +295,36 @@ public class PersistenceLayer {
         }
     }
 
+    public static String editPrecinctBoundaries(String precinctName, String coordinatesStr){
+        try {
+            EntityManager em = getEntityManagerInstance();
+            Precinct precinct = em.find(Precinct.class, precinctName);
+            JSONParser parser = new JSONParser();
+            JSONObject geoJson = (JSONObject) parser.parse(precinct.getGeojson());
+            em.getTransaction().begin();
+            JSONObject geometry = (JSONObject)geoJson.get("geometry");
+            System.out.println("PRECINCT GEOJSON BEFORE= " + geoJson.toJSONString());
+            System.out.println();
+            geometry.remove("coordinates");
+            geometry.put("coordinates", parser.parse(coordinatesStr));
+            geoJson.remove("geometry");
+            geoJson.put("geometry", geometry);
+            System.out.println("PRECINCT GEOJSON AFTER CHANGING JSONOBJECT= " + geoJson.toJSONString());
+            System.out.println();
+            precinct.setGeojson(geoJson.toJSONString());
+            System.out.println("AFTER SETTING= " + precinct.getGeojson());
+            System.out.println();
+            em.flush();
+
+            return "SUCCESS";
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return e.getMessage();
+        }
+
+    }
+
     public static String getPrecinctCoordinates(String precinctName){
         try {
             EntityManager em = getEntityManagerInstance();

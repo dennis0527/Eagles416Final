@@ -96,10 +96,8 @@ public class AppHandler {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{precinctName}/UpdateCoordinates/")
     public String updateCoordinates(@PathParam("precinctName") String precinctName, String coordinatesStr){
-        System.out.println(coordinatesStr);
-        return "SUCCESS";
+        return PersistenceLayer.editPrecinctBoundaries(precinctName, coordinatesStr);
     }
-
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

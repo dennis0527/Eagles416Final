@@ -628,13 +628,13 @@
                 resultArr.unshift(elem);
             }
             console.log(resultArr);
-            result = JSON.stringify(resultArr);
+            result = JSON.stringify([[resultArr]]);
 
         }
         else if (document.getElementById("state_change").value == 2) {
             console.log(polyline);
             console.log(JSON.stringify(polyline.toGeoJSON().geometry.coordinates[0]));
-            result = JSON.stringify(polyline.toGeoJSON().geometry.coordinates[0]);
+            result = JSON.stringify([polyline.toGeoJSON().geometry.coordinates[0]]);
         }
         else if (document.getElementById("state_change").value == 3) {
             console.log(polyline);
@@ -648,13 +648,14 @@
                 resultArr.unshift(elem);
             }
             console.log(resultArr);
-            result = JSON.stringify(resultArr);
+            result = JSON.stringify([[resultArr]]);
         }
         map.removeLayer(polyline);
         $.post("http://localhost:8080/election_data_quality_eagles_war_exploded/app/" + precinctName + "/UpdateCoordinates", result, function (data, status) {
             alert("Coordinates have been updated");
+            alterStyleData();
         });
-        alterStyleData();
+
 
 
     }
