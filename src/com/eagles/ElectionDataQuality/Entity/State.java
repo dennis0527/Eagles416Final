@@ -75,7 +75,7 @@ public class State {
         return Objects.hash(canonicalName, abbreviation, fullName, geojson);
     }
 
-    @OneToOne(mappedBy = "stateByCanonicalAreaName")
+    @OneToOne(fetch = FetchType.LAZY ,mappedBy = "stateByCanonicalAreaName")
     public Demographics getDemographicsByCanonicalName() {
         return demographicsByCanonicalName;
     }
@@ -84,7 +84,7 @@ public class State {
         this.demographicsByCanonicalName = demographicsByCanonicalName;
     }
 
-    @OneToMany(mappedBy = "stateByCanonicalStateName")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "stateByCanonicalStateName")
     public Collection<NationalPark> getNationalParksByCanonicalName() {
         return nationalParksByCanonicalName;
     }
@@ -93,7 +93,7 @@ public class State {
         this.nationalParksByCanonicalName = nationalParksByCanonicalName;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public Coordinates getCoordinatesByCanonicalName() {
         return coordinatesByCanonicalName;
@@ -133,7 +133,7 @@ public class State {
         this.anomalousErrors = anomalousErrors;
     }
 
-    @OneToMany(mappedBy = "stateByCanonicalStateName")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "stateByCanonicalStateName")
     public Collection<Precinct> getPrecinctsByCanonicalName() {
         return precinctsByCanonicalName;
     }

@@ -69,7 +69,7 @@ public class ElectionData {
         return Objects.hash(canonicalAreaName, electionType, democratVote, republicanVote);
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_area_name", referencedColumnName = "canonical_name", nullable = false, insertable = false, updatable = false)
     public District getDistrictByCanonicalAreaName() {
         return districtByCanonicalAreaName;
@@ -79,7 +79,7 @@ public class ElectionData {
         this.districtByCanonicalAreaName = districtByCanonicalAreaName;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_area_name", referencedColumnName = "canonical_name", nullable = false, insertable = false, updatable = false)
     public Precinct getPrecinctByCanonicalAreaName() {
         return precinctByCanonicalAreaName;

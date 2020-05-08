@@ -1,4 +1,4 @@
-package helpers;
+package com.eagles.ElectionDataQuality.Helpers;
 
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;

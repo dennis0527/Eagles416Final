@@ -58,7 +58,7 @@ public class NationalPark {
         return Objects.hash(canonicalName, canonicalStateName, neighbors);
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public Coordinates getCoordinatesByCanonicalName() {
         return coordinatesByCanonicalName;
@@ -68,7 +68,7 @@ public class NationalPark {
         this.coordinatesByCanonicalName = coordinatesByCanonicalName;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_state_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public State getStateByCanonicalStateName() {
         return stateByCanonicalStateName;

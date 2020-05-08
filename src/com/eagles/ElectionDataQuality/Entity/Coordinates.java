@@ -48,7 +48,7 @@ public class Coordinates {
         return Objects.hash(canonicalName, coords);
     }
 
-    @OneToOne(mappedBy = "coordinatesByCanonicalName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "coordinatesByCanonicalName")
     public District getDistrictByCanonicalName() {
         return districtByCanonicalName;
     }
@@ -57,7 +57,7 @@ public class Coordinates {
         this.districtByCanonicalName = districtByCanonicalName;
     }
 
-    @OneToOne(mappedBy = "coordinatesByCanonicalName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "coordinatesByCanonicalName")
     public NationalPark getNationalParkByCanonicalName() {
         return nationalParkByCanonicalName;
     }
@@ -66,7 +66,7 @@ public class Coordinates {
         this.nationalParkByCanonicalName = nationalParkByCanonicalName;
     }
 
-    @OneToOne(mappedBy = "coordinatesByCanonicalName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "coordinatesByCanonicalName")
     public Precinct getPrecinctByCanonicalName() {
         return precinctByCanonicalName;
     }
@@ -75,7 +75,7 @@ public class Coordinates {
         this.precinctByCanonicalName = precinctByCanonicalName;
     }
 
-    @OneToOne(mappedBy = "coordinatesByCanonicalName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "coordinatesByCanonicalName")
     public State getStateByCanonicalName() {
         return stateByCanonicalName;
     }

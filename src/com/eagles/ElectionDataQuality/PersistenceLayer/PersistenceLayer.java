@@ -7,17 +7,15 @@ import com.eagles.ElectionDataQuality.Entity.Precinct;
 import com.eagles.ElectionDataQuality.Entity.State;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
-import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.util.*;
-import helpers.MergePrecinctHelpers;
+import com.eagles.ElectionDataQuality.Helpers.MergePrecinctHelpers;
 
 public class PersistenceLayer {
     private static Properties props = new Properties();
@@ -47,13 +45,13 @@ public class PersistenceLayer {
     }
 
     public static String getNeighbors(String stateName, String precinctName) {
+        stateName = stateName.replaceAll(" " , "");
         EntityManager em = getEntityManagerInstance();
         try {
             InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
             props.load(is);
             Query query = em.createQuery("Select p.neighbors from Precinct p where p.canonicalName = \"" +
-                    precinctName + "\"" + " and p.canonicalStateName = \"" + props.getProperty(stateName).
-                    replaceAll(" ", "") + "\"");
+                    precinctName + "\"" + " and p.canonicalStateName = \"" + props.getProperty(stateName) + "\"");
             JSONParser parser = new JSONParser();
             JSONObject object =  (JSONObject) parser.parse((String)query.getSingleResult());
             JSONArray neighbors = (JSONArray) object.get("neighbors");
@@ -66,6 +64,7 @@ public class PersistenceLayer {
     }
 
     public static String addNeighbors(String stateName, String precinct1, String precinct2){
+        stateName = stateName.replaceAll(" " , "");
         EntityManager em = getEntityManagerInstance();
         Query query1 = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct1 + "\"");
         Precinct p1 = (Precinct) query1.getSingleResult();
@@ -211,6 +210,7 @@ public class PersistenceLayer {
     }
 
     public static String getAnomalousErrors(String stateName){
+        stateName = stateName.replaceAll(" " , "");
         try {
             InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
             props.load(is);
@@ -278,7 +278,7 @@ public class PersistenceLayer {
             InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
             props.load(is);
             EntityManager em = getEntityManagerInstance();
-            String state = props.getProperty(stateName);
+            String state = props.getProperty(stateName.replaceAll(" ", ""));
             Query query = em.createQuery("Select p.geojson from Precinct p where p.canonicalStateName = \"" + state + "\"");
             List<String> precincts = (List<String>) query.getResultList();
             JSONParser parser = new JSONParser();
@@ -294,18 +294,6 @@ public class PersistenceLayer {
             return null;
         }
     }
-//
-//    public static String getPrecinctCoordinates(String precinctName){
-//        try {
-//            EntityManager em = getEntityManagerInstance();
-//            Query query = em.createQuery("Select c.coords from Coordinates c WHERE c.canonicalName = \""
-//                    + precinctName + "\"");
-//            String coordinates = (String) query.getSingleResult();
-//            return coordinates;
-//        } catch (Exception e) {
-//            return e.getMessage();
-//        }
-//    }
 
     public static String getPrecinctCoordinates(String precinctName){
         try {

@@ -59,7 +59,7 @@ public class District {
         return Objects.hash(canonicalName, fullName, canonicalStateName);
     }
 
-    @OneToOne(mappedBy = "districtByCanonicalAreaName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "districtByCanonicalAreaName")
     public Demographics getDemographicsByCanonicalName() {
         return demographicsByCanonicalName;
     }
@@ -68,7 +68,7 @@ public class District {
         this.demographicsByCanonicalName = demographicsByCanonicalName;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public Coordinates getCoordinatesByCanonicalName() {
         return coordinatesByCanonicalName;
@@ -78,7 +78,7 @@ public class District {
         this.coordinatesByCanonicalName = coordinatesByCanonicalName;
     }
 
-    @OneToOne(mappedBy = "districtByCanonicalAreaName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "districtByCanonicalAreaName")
     public ElectionData getElectionDataByCanonicalName() {
         return electionDataByCanonicalName;
     }

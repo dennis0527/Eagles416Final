@@ -12,7 +12,6 @@
         <class>com.eagles.ElectionDataQuality.Entity.Demographics</class>
         <class>com.eagles.ElectionDataQuality.Entity.District</class>
         <class>com.eagles.ElectionDataQuality.Entity.ElectionData</class>
-        <class>com.eagles.ElectionDataQuality.Entity.Error</class>
         <class>com.eagles.ElectionDataQuality.Entity.NationalPark</class>
         <class>com.eagles.ElectionDataQuality.Entity.Precinct</class>
         <class>com.eagles.ElectionDataQuality.Entity.State</class>

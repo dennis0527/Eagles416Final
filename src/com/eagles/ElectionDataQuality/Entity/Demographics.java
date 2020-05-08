@@ -106,7 +106,7 @@ public class Demographics {
         return Objects.hash(canonicalAreaName, totalPopulation, whitePercent, blackPercent, hispanicPercent, asianPercent, nativeAmericanPercent);
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_area_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public State getStateByCanonicalAreaName() {
         return stateByCanonicalAreaName;
@@ -116,7 +116,7 @@ public class Demographics {
         this.stateByCanonicalAreaName = stateByCanonicalAreaName;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_area_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public District getDistrictByCanonicalAreaName() {
         return districtByCanonicalAreaName;
@@ -126,7 +126,7 @@ public class Demographics {
         this.districtByCanonicalAreaName = districtByCanonicalAreaName;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_area_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public Precinct getPrecinctByCanonicalAreaName() {
         return precinctByCanonicalAreaName;

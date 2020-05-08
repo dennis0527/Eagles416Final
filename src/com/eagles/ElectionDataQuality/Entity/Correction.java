@@ -13,18 +13,9 @@ public class Correction {
     private Time time;
     private Date date;
     private String canonicalPrecinctName;
-    private Error errorByErrorId;
     private Precinct precinctByCanonicalPrecinctName;
-
-    @Id
-    @Column(name = "errorID", nullable = false)
-    public int getErrorId() {
-        return errorId;
-    }
-
-    public void setErrorId(int errorId) {
-        this.errorId = errorId;
-    }
+    private int id;
+    private String errorType;
 
     @Basic
     @Column(name = "comment", nullable = true, length = 255)
@@ -83,17 +74,7 @@ public class Correction {
         return Objects.hash(errorId, comment, time, date, canonicalPrecinctName);
     }
 
-    @OneToOne
-    @JoinColumn(name = "errorID", referencedColumnName = "error_id", nullable = false, insertable=false, updatable=false)
-    public Error getErrorByErrorId() {
-        return errorByErrorId;
-    }
-
-    public void setErrorByErrorId(Error errorByErrorId) {
-        this.errorByErrorId = errorByErrorId;
-    }
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_precinct_name", referencedColumnName = "canonical_name", insertable=false, updatable=false)
     public Precinct getPrecinctByCanonicalPrecinctName() {
         return precinctByCanonicalPrecinctName;
@@ -101,5 +82,25 @@ public class Correction {
 
     public void setPrecinctByCanonicalPrecinctName(Precinct precinctByCanonicalPrecinctName) {
         this.precinctByCanonicalPrecinctName = precinctByCanonicalPrecinctName;
+    }
+
+    @Id
+    @Column(name = "id", nullable = false)
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Basic
+    @Column(name = "error_type", nullable = true)
+    public String getErrorType() {
+        return errorType;
+    }
+
+    public void setErrorType(String errorType) {
+        this.errorType = errorType;
     }
 }

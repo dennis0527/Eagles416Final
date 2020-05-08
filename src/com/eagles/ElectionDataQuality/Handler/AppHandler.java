@@ -24,6 +24,7 @@ public class AppHandler {
     @Path("/Precinct/{stateName}")
     public String getPrecinctData(@PathParam("stateName") String name) {
         return PersistenceLayer.getPrecinctsData(name.replaceAll("%20", " "));
+//        return PersistenceLayer.getPrecinctsData(name);
     }
 
     @GET
@@ -90,6 +91,15 @@ public class AppHandler {
     public String getCoordinates(@PathParam("precinctName") String precinctName){
         return PersistenceLayer.getPrecinctCoordinates(precinctName);
     }
+
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("{precinctName}/UpdateCoordinates/")
+    public String updateCoordinates(@PathParam("precinctName") String precinctName, String coordinatesStr){
+        System.out.println(coordinatesStr);
+        return "SUCCESS";
+    }
+
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

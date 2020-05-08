@@ -14,7 +14,6 @@ public class Precinct {
     private Collection<Correction> correctionsByCanonicalName;
     private Demographics demographicsByCanonicalName;
     private ElectionData electionDataByCanonicalName;
-    private Collection<Error> errorsByCanonicalName;
     private Coordinates coordinatesByCanonicalName;
     private String geojson;
     private State stateByCanonicalStateName;
@@ -75,7 +74,7 @@ public class Precinct {
         return Objects.hash(canonicalName, fullName, neighbors, canonicalStateName);
     }
 
-    @OneToMany(mappedBy = "precinctByCanonicalPrecinctName")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "precinctByCanonicalPrecinctName")
     public Collection<Correction> getCorrectionsByCanonicalName() {
         return correctionsByCanonicalName;
     }
@@ -84,7 +83,7 @@ public class Precinct {
         this.correctionsByCanonicalName = correctionsByCanonicalName;
     }
 
-    @OneToOne(mappedBy = "precinctByCanonicalAreaName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "precinctByCanonicalAreaName")
     public Demographics getDemographicsByCanonicalName() {
         return demographicsByCanonicalName;
     }
@@ -93,7 +92,7 @@ public class Precinct {
         this.demographicsByCanonicalName = demographicsByCanonicalName;
     }
 
-    @OneToOne(mappedBy = "precinctByCanonicalAreaName")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "precinctByCanonicalAreaName")
     public ElectionData getElectionDataByCanonicalName() {
         return electionDataByCanonicalName;
     }
@@ -102,16 +101,9 @@ public class Precinct {
         this.electionDataByCanonicalName = electionDataByCanonicalName;
     }
 
-    @OneToMany(mappedBy = "precinctByCanonicalPrecinctName")
-    public Collection<Error> getErrorsByCanonicalName() {
-        return errorsByCanonicalName;
-    }
 
-    public void setErrorsByCanonicalName(Collection<Error> errorsByCanonicalName) {
-        this.errorsByCanonicalName = errorsByCanonicalName;
-    }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_name", referencedColumnName = "canonical_name", nullable = false, insertable=false, updatable=false)
     public Coordinates getCoordinatesByCanonicalName() {
         return coordinatesByCanonicalName;
@@ -131,7 +123,7 @@ public class Precinct {
         this.geojson = geojson;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_state_name", referencedColumnName = "canonical_name", insertable = false, updatable = false)
     public State getStateByCanonicalStateName() {
         return stateByCanonicalStateName;

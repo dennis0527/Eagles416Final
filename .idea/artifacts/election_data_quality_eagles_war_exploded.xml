@@ -19,6 +19,7 @@
           <element id="file-copy" path="$USER_HOME$/Desktop/jts-1.14/lib/jtsio-1.14.jar" />
           <element id="file-copy" path="$PROJECT_DIR$/lib/jtsio-1.14.jar" />
           <element id="file-copy" path="$PROJECT_DIR$/lib/jts-1.14.jar" />
+          <element id="file-copy" path="$PROJECT_DIR$/lib/org.eclipse.persistence.jpa-2.7.3.jar" />
         </element>
       </element>
     </root>
