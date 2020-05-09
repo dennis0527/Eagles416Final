@@ -150,9 +150,13 @@ public class PersistenceLayer {
         Precinct p1 = (Precinct) p1Query.getSingleResult();
         String p1Geojson = p1.getGeojson();
 
+        System.out.println(p1Geojson);
+
         Query p2Query = em.createQuery("Select p from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
         Precinct p2 = (Precinct) p2Query.getSingleResult();
         String p2Geojson = p2.getGeojson();
+
+        System.out.println(p2Geojson);
 
         em.getTransaction().begin();
 
@@ -162,6 +166,8 @@ public class PersistenceLayer {
 
             JSONObject p2JSON =  (JSONObject) parser.parse(p2Geojson);
             JSONObject p2Coords = (JSONObject) p2JSON.get("geometry");
+
+            System.out.println(p1Coords.toJSONString());
 
             Geometry p1Geom = reader.read(p1Coords.toJSONString());
             Geometry p2Geom = reader.read(p2Coords.toJSONString());

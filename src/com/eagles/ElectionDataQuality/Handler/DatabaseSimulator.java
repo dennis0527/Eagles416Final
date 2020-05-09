@@ -78,4 +78,27 @@ public class DatabaseSimulator {
     }
 
 
+    public static String getMapCoverageErrors(String stateName) {
+        JSONParser parser = new JSONParser();
+        InputStream fileName = null;
+        if (stateName.equals("Maryland")) {
+
+        }
+        else if (stateName.equals("Florida")) {
+            fileName = DatabaseSimulator.class.getClassLoader().getResourceAsStream("Florida_map_coverage_errors.json");
+        }
+        else if (stateName.equals("New York")) {
+            fileName = DatabaseSimulator.class.getClassLoader().getResourceAsStream("New York_map_coverage_errors.json");
+        }
+        try {
+            Reader reader = new InputStreamReader(fileName);
+            JSONObject jsonObject = (JSONObject) parser.parse(reader);
+            String result = "";
+            result = jsonObject.toString();
+            return result;
+        } catch (Exception e) {
+            System.out.println("\n\n\n\n\n" + e.toString());
+            return e.toString();
+        }
+    }
 }

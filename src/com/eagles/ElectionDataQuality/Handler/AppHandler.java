@@ -62,6 +62,13 @@ public class AppHandler {
         return DatabaseSimulator.getOverlappingPrecinctErrors(state);
     }
 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("MapCoverageError/{stateName}")
+    public String getMapCoverageErrors(@PathParam("stateName") String state) {
+        return DatabaseSimulator.getMapCoverageErrors(state);
+    }
+
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("AddNeighbors/{stateName}/{precinctName1}/{precinctName2}")

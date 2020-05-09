@@ -36,16 +36,18 @@
             <div id="map"></div>
         </div>
         <div class="col-lg-6">
+            <div id = "tabs">
             <ul class="nav nav-pills">
-                <li class="active"><a data-toggle="pill" href="#CorrectionsTab">Submit Correction</a></li>
-                <li><a data-toggle="pill" href="#HistoryTab">Correction History</a></li>
-                <li><a data-toggle="pill" href="#CommentsTab">Comments</a></li>
-                <li><a data-toggle="pill" href="#GhostPrecinctTab">Add Ghost Precinct</a></li>
-                <li><a data-toggle="pill" href="#MergePrecinctTab">Merge Precincts</a></li>
-                <li><a data-toggle="pill" href="#ChangeBoundaryTab">Change Precinct Boundary</a></li>
-                <li><a data-toggle="pill" href="#AddPrecinctTab">Add/Delete Neighbors</a></li>
+                <li class="active"><a data-toggle="pill" href="#CorrectionsTab" id = "CorrectionsLink">Submit Correction</a></li>
+                <li><a data-toggle="pill" href="#HistoryTab" id = "History Link">Correction History</a></li>
+                <li><a data-toggle="pill" href="#CommentsTab" id = "CommentsLink">Comments</a></li>
+                <li><a data-toggle="pill" href="#GhostPrecinctTab" id = "GhostPrecinctLink">Add Ghost Precinct</a></li>
+                <li><a data-toggle="pill" href="#MergePrecinctTab" id = "MergePrecinctLink">Merge Precincts</a></li>
+                <li><a data-toggle="pill" href="#ChangeBoundaryTab" id = "ChangeBoundaryLink">Change Precinct Boundary</a></li>
+                <li><a data-toggle="pill" href="#AddPrecinctTab" id = "AddPrecinctLink">Add/Delete Neighbors</a></li>
 
             </ul>
+            </div>
             <div class="tab-content">
                 <div id="CorrectionsTab" class="tab-pane fade in active">
                     <h3>Submit a correction</h3>
@@ -230,7 +232,6 @@
     </div>
     <h3 id="WarningChangePrecinctBoundary" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
-<!--adsfasd-->
 <div id="AddPrecinctTab" class="tab-pane fade">
     <div id="InnerAddPrecinct" style="display: none;">
         <h3>Add the graph edges of two precincts</h3>
@@ -305,6 +306,8 @@
 
 <!-- <div id = "label"><button onclick="addMarker();">toggle marker mode</button></div>
 <div id = "affiliation"><button onclick="affiliation();">toggle affiliation highlight</button></div> -->
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
 <script>
     let mapData;
     let mapLayers;
@@ -698,12 +701,19 @@
             alert("Please select both precincts");
         } else {
             let url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/MergePrecincts/" +
-                (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
-                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
+                (document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
+                (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
+
+            let error = document.getElementById('ErrorSelected').innerHTML;
+
+            console.log(url);
 
             $.post(url, function (data, status) {
                 alert(status);
                 alterStyleData();
+                markerDeselect();
+                clearMarker(error);
+                document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>None";
             });
 
             alert((document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
@@ -741,8 +751,6 @@
         if (document.getElementById('AddPrecinctNameTwo').innerHTML == "<b>Second Precinct Selected: </b>None") {
             alert("Please select both precincts");
         } else {
-
-            console.log(url);
 
             $.post(url, function (data, status) {
                 alert(data);
@@ -1060,7 +1068,6 @@
             let neighbors_url;
             let ref = this;
             if (props) {
-                // console.log("Precinct name: " + props.CANON_NAME)
                 switch (document.getElementById("state_change").value) {
                     case "1":
                         neighbors_url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/Florida/" + props.CANON_NAME + "/neighbors";
@@ -1072,7 +1079,6 @@
                         neighbors_url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/New York/" + props.CANON_NAME + "/neighbors";
                         break;
                     default:
-                        console.log("NEIGHBORS_URL: " + "NOT FOUND")
                 }
                 $.get(neighbors_url, function (data, status) {
                     neighbors = data;
@@ -1192,27 +1198,37 @@ was posted.
     }
 
     function correctionSubmitted() {
-        document.getElementById("correction-state").selectedIndex = 0
-        document.getElementById("correction-precinct").selectedIndex = 0
-        document.getElementById("correction-election").selectedIndex = 0
-        document.getElementById("correction-list").selectedIndex = 0
-        map.removeLayer(markers);
+        let temp = document.getElementById('ErrorSelected').innerHTML;
 
-        alert("Correction submitted");
+        if(document.getElementById("correction-list").selectedIndex == 3){
+            temp = temp.substring(temp.indexOf(":")+1, temp.length);    //go past "Selected Error:"
+            temp = temp.substring(temp.indexOf(":"), temp.length);    //go past "Error X:"
+            temp = temp.replace(":<br>Enclosed precinct: ", "");
+            let temp2 = temp;
+            console.log(temp2);
+            temp = temp.substring(0, temp.indexOf(","));
+
+            temp2 = temp2.substring(temp2.indexOf(","), temp2.length);
+            temp2 = temp2.replace(",<br>enclosing precinct: ", "");
+            console.log(temp2);
+
+            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + temp;
+            document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>" + temp2;
+            $('#MergePrecinctLink')[0].click();
+        }
+
+        // document.getElementById("correction-state").selectedIndex = 0;
+        // document.getElementById("correction-election").selectedIndex = 0;
+        // document.getElementById("correction-list").selectedIndex = 0;
     }
 
-    /* If the chosen correction is fix overlapping precincts then pop-up a marker to one that I found. */
-    /* TODO: Make this dynamic if we keep this. Thinking of making a markers array that has a value
-    for what kind of error it is and then it would show all markers with that error when you switch it.
-    For now for GUI Demo this is fine.
- */
-
-    let markers = new L.FeatureGroup();
+    let markers = new L.LayerGroup();
+    let id;
 
     function changeCorrection() {
         let e = document.getElementById("correction-list");
         let chosenCorrection = e.options[e.selectedIndex].text;
-        let index = e.selectedIndex
+        let index = e.selectedIndex;
         e = document.getElementById("correction-election");
         let chosenElection = e.options[e.selectedIndex].text;
         e = document.getElementById("correction-state");
@@ -1230,7 +1246,6 @@ was posted.
         }
 
         if (index == 5 || index == 6 || index == 7) {
-            console.log("HERE\n\n\n")
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AnomalousError/" + chosenState;
 
             $.get(url, function (data, status) {
@@ -1252,7 +1267,16 @@ was posted.
                 createErrorMarkers(data.features, election, "overlapping");
                 $('#loader').addClass("hide-loader").removeClass("loader");
             });
-        } else {
+        } else if (chosenCorrection == "Show gaps in precincts") {
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/MapCoverageError/" + chosenState;
+
+            $('#loader').addClass("loader").removeClass("hide-loader");
+            $.get(url, function (data, status) {
+                createErrorMarkers(data.mapCoverageErrors, election, "coverage");
+                $('#loader').addClass("hide-loader").removeClass("loader");
+            });
+        }
+        else {
             map.removeLayer(markers);
         }
     }
@@ -1262,11 +1286,9 @@ was posted.
         let temp;
         let markerLocation;
         let marker;
-        console.log(election);
 
         let e = document.getElementById("correction-list");
         let chosenCorrection = e.options[e.selectedIndex].text;
-        console.log(chosenCorrection);
         for (i in data) {
             let label = "Error " + i + ":<br>";
             let unchanged = true;
@@ -1290,29 +1312,42 @@ was posted.
                 }
             } else if (errorType == "enclosed") {
                 label = "Error " + i + ":<br>Enclosed precinct: " + data[i].enclosedPrecinct
-                    + ", enclosing precinct: " + data[i].enclosingPrecinct;
+                    + ",<br>enclosing precinct: " + data[i].enclosingPrecinct;
                 unchanged = false;
 
             } else if (errorType == "overlapping") {
-                label = data[i].properties.CANON_NAME_1 + " is overlapped by: " + data[i].properties.CANON_NAME_2;
+                label = data[i].properties.CANON_NAME_1 + " is overlapped by:<br>" + data[i].properties.CANON_NAME_2;
+                unchanged = false;
+            } else if (errorType == "coverage") {
+                if(data[i].ghostPrecinct == "False"){
+                    label = label + "Gap";
+                }else{
+                    label = label + "Ghost Precinct";
+                }
                 unchanged = false;
             }
             if (!unchanged) {
                 try {
-                    console.log(label);
                     if (errorType == "overlapping") {
                         temp = L.geoJson({
                             "type": "MultiPolygon",
                             "coordinates": data[i].geometry.coordinates
                         });
+                        markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
+                    } else if (errorType == "coverage"){
+                        temp = L.geoJson({
+                            "type": data[i].coordinates.type,
+                            "coordinates": data[i].coordinates.coordinates
+                        });
+                        markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
                     }
                     else {
                         temp = L.geoJson({
                             "type": data[i].coordinates.type,
                             "coordinates": data[i].coordinates.coordinates
                         });
+                        markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
                     }
-                    markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
                     // marker = new L.Marker(markerLocation).on('click', markerClick, getErrorName(data[i]));
                     marker = new L.Marker(markerLocation).on('click', function (e) {
                         markerDeselect();
@@ -1337,6 +1372,18 @@ was posted.
         }
     }
 
+    function clearMarker(error) {
+        error = error.substring(error.indexOf(":"), error.length);
+        error = error.substring(6, error.length);
+
+        markers.eachLayer(function (layer) {
+            let tooltip = layer._tooltip._content;
+            if(tooltip == error){
+                markers.removeLayer(layer);
+            }
+        });
+    }
+
 
     let goldIcon = new L.Icon({
         iconUrl: 'img/marker-icon-2x-gold.png',
@@ -1358,6 +1405,7 @@ was posted.
 
     function markerClick(e) {
         map.flyTo(e.latlng, 10);
+        markerDeselect();
         selectedError = e.target;
         let errorString = selectedError.getTooltip().getContent();
         selectedError.getTooltip().setContent("<b>" + errorString + "</b>");
@@ -1372,7 +1420,6 @@ was posted.
         let chosenCorrection = dropdown.options[dropdown.selectedIndex].text;
         let index = dropdown.selectedIndex;
         let str = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
-        console.log(error);
 
         if (index == 5 || index == 6 || index == 7) {
             if(error.includes("excess")){
@@ -1409,9 +1456,9 @@ was posted.
             }
             document.getElementById('ErrorSelected').innerHTML = str;
         } else if (chosenCorrection == "Show enclosed precincts") {
-            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error;
         } else if (chosenCorrection == "Show overlapping precincts") {
-            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error.substring(6, error.indexOf(":"));
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error;
         } else {
             return;
         }

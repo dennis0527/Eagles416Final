@@ -73,5 +73,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="@types/jquery" level="application" />
+    <orderEntry type="library" name="@types/bootstrap" level="application" />
   </component>
 </module>
