@@ -8,7 +8,7 @@ import java.util.Objects;
 public class OverlappingErrors {
     private int id;
     private String precinctName;
-    private String overlappingPrecincts;
+    private String overlappingPrecinct;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -32,12 +32,12 @@ public class OverlappingErrors {
 
     @Basic
     @Column(name = "overlapping_precincts", nullable = true)
-    public String getOverlappingPrecincts() {
-        return overlappingPrecincts;
+    public String getOverlappingPrecinct() {
+        return overlappingPrecinct;
     }
 
-    public void setOverlappingPrecincts(String overlappingPrecincts) {
-        this.overlappingPrecincts = overlappingPrecincts;
+    public void setOverlappingPrecinct(String overlappingPrecincts) {
+        this.overlappingPrecinct = overlappingPrecincts;
     }
 
     @Override
@@ -47,11 +47,11 @@ public class OverlappingErrors {
         OverlappingErrors that = (OverlappingErrors) o;
         return id == that.id &&
                 Objects.equals(precinctName, that.precinctName) &&
-                Objects.equals(overlappingPrecincts, that.overlappingPrecincts);
+                Objects.equals(overlappingPrecinct, that.overlappingPrecinct);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, precinctName, overlappingPrecincts);
+        return Objects.hash(id, precinctName, overlappingPrecinct);
     }
 }

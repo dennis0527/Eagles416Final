@@ -62,7 +62,7 @@ public class Correction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Correction that = (Correction) o;
-        return errorId == that.errorId &&
+        return id == that.id &&
                 Objects.equals(comment, that.comment) &&
                 Objects.equals(time, that.time) &&
                 Objects.equals(date, that.date) &&
@@ -71,7 +71,7 @@ public class Correction {
 
     @Override
     public int hashCode() {
-        return Objects.hash(errorId, comment, time, date, canonicalPrecinctName);
+        return Objects.hash(id, comment, time, date, canonicalPrecinctName);
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

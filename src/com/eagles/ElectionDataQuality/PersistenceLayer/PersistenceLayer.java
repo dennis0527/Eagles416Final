@@ -1,10 +1,6 @@
 package com.eagles.ElectionDataQuality.PersistenceLayer;
 
-import com.eagles.ElectionDataQuality.Entity.AnomalousErrors;
-import com.eagles.ElectionDataQuality.Entity.Coordinates;
-import com.eagles.ElectionDataQuality.Entity.NationalPark;
-import com.eagles.ElectionDataQuality.Entity.Precinct;
-import com.eagles.ElectionDataQuality.Entity.State;
+import com.eagles.ElectionDataQuality.Entity.*;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 import org.json.simple.JSONArray;
@@ -14,6 +10,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import com.eagles.ElectionDataQuality.Helpers.MergePrecinctHelpers;
 
@@ -216,7 +214,6 @@ public class PersistenceLayer {
     }
 
     public static String getAnomalousErrors(String stateName){
-        stateName = stateName.replaceAll(" " , "");
         try {
             InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
             props.load(is);
@@ -235,13 +232,12 @@ public class PersistenceLayer {
                 individualPrecinct.put("precinctName", e.getPrecinctName());
                 Query coordinatesQuery = em.createQuery("Select c from Coordinates c WHERE c.canonicalName = \""
                         + e.getPrecinctName() + "\"");
-                Coordinates coords = (Coordinates)coordinatesQuery.getSingleResult();
-                JSONObject coordinates = (JSONObject)parser.parse(coords.getCoords());
-                coordinates.put("type", coords.getPolygonType());
+                Coordinates coordinatesQuerySingleResult = (Coordinates)coordinatesQuery.getSingleResult();
+                JSONObject coordinates = (JSONObject)parser.parse(coordinatesQuerySingleResult.getCoords());
+                coordinates.put("type", coordinatesQuerySingleResult.getPolygonType());
                 individualPrecinct.put("coordinates", coordinates);
                 anomalousPrecincts.add(individualPrecinct);
             }
-
             return skeleton.toJSONString();
 
         } catch (Exception e) {
@@ -250,12 +246,39 @@ public class PersistenceLayer {
     }
 
     public static String getEnclosedPrecinctErrors(String stateName) {
-        EntityManager em = getEntityManagerInstance();
-        if (stateName.equalsIgnoreCase("Maryland")) {
-            State s = em.find(State.class, "state_MD");
-            return s.getEnclosedErrors();
+        try {
+            InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
+            props.load(is);
+            EntityManager em = getEntityManagerInstance();
+            Query query = em.createQuery("Select e from EnclosedErrors e where e.stateName = :stateName");
+            query.setParameter("stateName", stateName);
+            List<EnclosedErrors> errors = (List<EnclosedErrors>) query.getResultList();
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(props.getProperty("enclosedErrors"));
+            JSONArray enclosedErrors = (JSONArray)json.get("enclosedPrecincts");
+
+            for(EnclosedErrors e : errors){
+                JSONObject singleError = (JSONObject) parser.parse(props.getProperty("individualEnclosingPrecincts"));
+                singleError.put("stateName", e.getStateName());
+                singleError.put("enclosingPrecinct", e.getEnclosingPrecinct());
+                singleError.put("enclosedPrecinct", e.getEnclosedPrecinct());
+                JSONObject coordinatesSingleError = (JSONObject) singleError.get("coordinates");
+                Query coordinatesQuery = em.createQuery("Select c from Coordinates c where c.canonicalName = :enclosed");
+                coordinatesQuery.setParameter("enclosed", e.getEnclosedPrecinct());
+                Coordinates coords = (Coordinates) coordinatesQuery.getSingleResult();
+                JSONObject coordinates = (JSONObject) parser.parse(coords.getCoords());
+                JSONArray coordinatesArray = (JSONArray) coordinates.get("coordinates");
+                coordinatesSingleError.put("type", coords.getPolygonType());
+                coordinatesSingleError.put("coordinates", coordinatesArray);
+                enclosedErrors.add(singleError);
+            }
+
+            return json.toJSONString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.getMessage();
         }
-        return "";
+
     }
 
     public static String getNationalParks() {
@@ -356,5 +379,37 @@ public class PersistenceLayer {
             return null;
         }
     }
+
+    public static String generateCorrectionData(String datatype, String stateName, String [] precinctNames) {
+        DateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar cal = Calendar.getInstance();
+        System.out.println("The system date and time are " + format.format(cal.getTime()));
+        String comment = "";
+        switch(datatype) {
+            case "enclosed":
+                comment = precinctNames[0] + " was merged with " + precinctNames[1];
+                break;
+            case "overlapping":
+                comment = precinctNames[0] + " had its boundary edited";
+                break;
+            case "addNeighbors":
+                comment = precinctNames[0] + " and " + precinctNames[1] + "were added as neigbhors";
+                break;
+            case "removeNeighbors":
+                comment = precinctNames[0] + " and " + precinctNames[1] + "were removed as neigbhors";
+                break;
+            case "defineGhostPrecinct":
+                comment = precinctNames[0] + " was defined as a ghost precinct";
+                break;
+            case "editPrecinctBoundary":
+                comment = precinctNames[0] + " had its boundary edited";
+                break;
+            default:
+                break;
+        }
+        return format.format(cal.getTime()) + " " + comment;
+
+    }
+
 
 }

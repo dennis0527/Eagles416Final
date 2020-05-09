@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <Resource id="myDS-Name" type="javax.sql.DataSource">
+    <Resource id="Eagles 416 Connection" type="javax.sql.DataSource">
         JtaManaged = false
         DataSourceCreator = tomcat
 

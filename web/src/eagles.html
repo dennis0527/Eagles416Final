@@ -31,11 +31,11 @@
             </a>
         </nav>
     </div>
-    <div class="row" style="height: 512px;">
-        <div class="col-lg-6">
+    <div class="row" style="height: 750px;">
+        <div class="col-lg-8">
             <div id="map"></div>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div id = "tabs">
             <ul class="nav nav-pills">
                 <li class="active"><a data-toggle="pill" href="#CorrectionsTab" id = "CorrectionsLink">Submit Correction</a></li>
@@ -52,7 +52,7 @@
                 <div id="CorrectionsTab" class="tab-pane fade in active">
                     <h3>Submit a correction</h3>
                     <div class="row" style="margin-top: 10px;">
-                        <h5 style="margin-left: 15px;">State:</h5>
+                        <h4 style="margin-left: 15px;">State:</h4>
                         <div class="col-lg-6">
                             <div class="dropdown">
                                 <select id="correction-state" onchange="changeCorrection()" class="form-control">
@@ -65,7 +65,7 @@
                         </div>
                     </div>
                     <div class="row" style="margin-top: 10px;">
-                        <h5 style="margin-left: 15px;">Election:</h5>
+                        <h4 style="margin-left: 15px;">Election:</h4>
                         <div class="col-lg-6">
                             <div class="dropdown">
                                 <select id="correction-election" onchange="changeCorrection()" class="form-control">
@@ -78,7 +78,7 @@
                         </div>
                     </div>
                     <div class="row" style="margin-top: 10px;">
-                        <h5 style="margin-left: 15px;">Corrections:</h5>
+                        <h4 style="margin-left: 15px;">Corrections:</h4>
                         <div class="col-lg-6">
                             <div class="dropdown">
                                 <select id="correction-list" onchange="changeCorrection()" class="form-control">
@@ -229,6 +229,9 @@
         <button id="SubmitBoundaryButton" type="button" class="btn btn-info pull-center"
                 onclick="submitBoundaryCoordinates()">Submit Edited Boundary
         </button>
+        <button id="CancelBoundaryButton" type="button" class="btn btn-info pull-center" onclick="cancelBoundaryCoordinates()">
+            Cancel Boundary Edit
+        </button>
     </div>
     <h3 id="WarningChangePrecinctBoundary" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
@@ -273,8 +276,6 @@
             </select>
         </div>
     </div>
-</div>
-<div class="row" style="margin-top: 10px;">
     <div class="col-lg-2">
         <div class="dropdown">
             <select id="data_type_select" class="form-control" onchange="alterStyleData()">
@@ -295,6 +296,8 @@
             </select>
         </div>
     </div>
+</div>
+<div class="row" style="margin-top: 10px;">
 </div>
 <div>
     <div class="custom-control custom-checkbox" style="padding-left: 5px; padding-top: 15px;">
@@ -347,6 +350,9 @@
         tileSize: 512,
         zoomOffset: -1
     }).addTo(map);
+
+    $("#map").height(735)
+    map.invalidateSize();
 
     /* Start out the map in state form */
     let statesToggle = 1;
@@ -658,9 +664,10 @@
             alert("Coordinates have been updated");
             alterStyleData();
         });
+    }
 
-
-
+    function cancelBoundaryCoordinates() {
+        map.removeLayer(polyline);
     }
 
 
@@ -751,6 +758,8 @@
         if (document.getElementById('AddPrecinctNameTwo').innerHTML == "<b>Second Precinct Selected: </b>None") {
             alert("Please select both precincts");
         } else {
+
+            console.log(url);
 
             $.post(url, function (data, status) {
                 alert(data);
@@ -1014,7 +1023,7 @@
             if (chosenData == "Population Data") {
                 legend.addTo(map);
                 this._div.innerHTML = '<h4>US Population Data</h4>' + (props ?
-                    '<b>' + props.name + '</b><br />' + props.density + ' people / mi<sup>2</sup>'
+                    '<b>' + props.name + '</b><br />' + props.density.toLocaleString() + ' people / mi<sup>2</sup>'
                     + '<h5><i>Source: US Census</i>' //dummy data to remove
                     : 'Hover over a state');
             } else if (chosenData == "Election Data") {
@@ -1085,7 +1094,7 @@
                     if (chosenData == "Population Data") {
                         legend.addTo(map);
                         ref._div.innerHTML = '<h4>Population Data</h4>' + (props ?
-                            '<b>' + props.CANON_NAME + '</b><br />' + props.POP + ' people '
+                            '<b>' + props.CANON_NAME + '</b><br />' + props.POP.toLocaleString() + ' people '
                             + '<h6>Neighbors: ' + neighbors.join(', ') + '</h6>'
                             + '<h5><i>Source: US Census</i>' //dummy data to remove
                             : 'Hover over a precinct');
@@ -1093,9 +1102,9 @@
                     if (chosenData == "Demographic Data") {
                         map.removeControl(legend);
                         ref._div.innerHTML = '<h4>Demographics</h4>' + (props ?
-                            '<b>' + props.CANON_NAME + '</b><br />' + 'white population: ' + props.WHITE +
-                            '</b><br />' + 'black population: ' + props.BLACK
-                            + '</b><br />' + 'asian population: ' + props.ASIAN
+                            '<b>' + props.CANON_NAME + '</b><br />' + 'white population: ' + props.WHITE.toLocaleString() +
+                            '</b><br />' + 'black population: ' + props.BLACK.toLocaleString()
+                            + '</b><br />' + 'asian population: ' + props.ASIAN.toLocaleString()
                             + '<h6>Neighbors: ' + neighbors.join(', ') + '</h6>'
                             + '<h5><i>Source: US Census</i>' //dummy data to remove
                             : 'Hover over a precinct');
@@ -1177,11 +1186,11 @@
         let e = document.getElementById("state_change");
         let chosenState = e.options[e.selectedIndex].text;
         if (chosenState == "Florida") {
-            map.flyTo([27.66, -81.5], 6);
+            map.flyTo([27.66, -83.5], 7);
         } else if (chosenState == "Maryland") {
-            map.flyTo([39.04, -76.64], 7.5);
+            map.flyTo([38.84, -77.14], 8);
         } else if (chosenState == "New York") {
-            map.flyTo([43.3, -74.21], 6.5);
+            map.flyTo([42.9, -76.21], 7);
         } else if (chosenState == "U.S. Map") {
             map.flyTo([37.8, -96], 4);
         }
@@ -1247,9 +1256,10 @@ was posted.
 
         if (index == 5 || index == 6 || index == 7) {
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AnomalousError/" + chosenState;
-
+            $('#loader').addClass("loader").removeClass("hide-loader");
             $.get(url, function (data, status) {
                 createErrorMarkers(data.anomalousPrecincts, election, "anomalous");
+                $('#loader').addClass("hide-loader").removeClass("loader");
             });
         } else if (chosenCorrection == "Show enclosed precincts") {
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/EnclosedPrecinctError/" + chosenState;
