@@ -1245,7 +1245,7 @@ was posted.
                 try {
                     if (errorType == "overlapping") {
                         temp = L.geoJson({
-                            "type": "MultiPolygon",
+                            "type": data[i].geometry.type,
                             "coordinates": data[i].geometry.coordinates
                         });
                         markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));

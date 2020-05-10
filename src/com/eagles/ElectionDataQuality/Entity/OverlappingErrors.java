@@ -4,11 +4,13 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "OVERLAPPING_ERRORS", schema = "supaul", catalog = "")
+@Table(name = "OVERLAPPING_ERRORS", schema = "supaul")
 public class OverlappingErrors {
     private int id;
     private String precinctName;
     private String overlappingPrecinct;
+    private String stateName;
+    private String geometryJson;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -31,7 +33,7 @@ public class OverlappingErrors {
     }
 
     @Basic
-    @Column(name = "overlapping_precincts", nullable = true)
+    @Column(name = "overlapping_precinct", nullable = true)
     public String getOverlappingPrecinct() {
         return overlappingPrecinct;
     }
@@ -53,5 +55,25 @@ public class OverlappingErrors {
     @Override
     public int hashCode() {
         return Objects.hash(id, precinctName, overlappingPrecinct);
+    }
+
+    @Basic
+    @Column(name = "state_name", nullable = true, length = 45)
+    public String getStateName() {
+        return stateName;
+    }
+
+    public void setStateName(String stateName) {
+        this.stateName = stateName;
+    }
+
+    @Basic
+    @Column(name = "geometry_json", nullable = true)
+    public String getGeometryJson() {
+        return geometryJson;
+    }
+
+    public void setGeometryJson(String geometryJson) {
+        this.geometryJson = geometryJson;
     }
 }

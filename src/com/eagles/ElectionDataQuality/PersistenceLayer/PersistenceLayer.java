@@ -295,6 +295,35 @@ public class PersistenceLayer {
 
     }
 
+    public static String getOverlappingPrecinctErrors(String stateName){
+        try {
+            InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
+            props.load(is);
+            EntityManager em = getEntityManagerInstance();
+            Query query = em.createQuery("Select o from OverlappingErrors o where o.stateName = :stateName");
+            query.setParameter("stateName", stateName);
+            List<OverlappingErrors> errors = query.getResultList();
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(props.getProperty("skeleton"));
+            JSONArray features = (JSONArray) json.get("features");
+
+            for(OverlappingErrors e : errors){
+                JSONObject singleError = (JSONObject) parser.parse(props.getProperty("individualOverlappingErrors"));
+                JSONObject properties = (JSONObject) singleError.get("properties");
+                properties.put("CANON_NAME_1", e.getPrecinctName());
+                properties.put("CANON_NAME_2", e.getOverlappingPrecinct());
+                singleError.put("geometry", parser.parse(e.getGeometryJson()));
+                features.add(singleError);
+
+            }
+            return json.toJSONString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+
+    }
+
     public static String getNationalParks() {
         try {
             InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
