@@ -10,6 +10,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
+import java.sql.Time;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -91,6 +93,10 @@ public class PersistenceLayer {
             p2.setNeighbors(p2JSON.toJSONString());
             em.flush();
             em.getTransaction().commit();
+            String[] precinctNames = new String[2];
+            precinctNames[0] = precinct1;
+            precinctNames[1] = precinct2;
+            generateCorrectionData("addNeighbors", precinctNames, null, null);
         }catch(Exception e){
             System.out.print(e);
         }
@@ -130,6 +136,10 @@ public class PersistenceLayer {
             p2.setNeighbors(p2JSON.toJSONString());
 
             em.getTransaction().commit();
+            String[] precinctNames = new String[2];
+            precinctNames[0] = precinct1;
+            precinctNames[1] = precinct2;
+            generateCorrectionData("removeNeighbors", precinctNames, null, null);
         }catch(Exception e){
             System.out.println("\n\n" + e.getMessage() + "\n\n");
             return e.getMessage();
@@ -203,6 +213,10 @@ public class PersistenceLayer {
 
             Query deleteQuery = em.createQuery("Delete from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
             deleteQuery.executeUpdate();
+            String[] precinctNames = new String[2];
+            precinctNames[0] = precinct1;
+            precinctNames[1] = precinct2;
+            generateCorrectionData("enclosed", precinctNames, null, null);
 
         }catch(Exception e){
             System.out.println(e);
@@ -333,17 +347,22 @@ public class PersistenceLayer {
             em.getTransaction().begin();
             JSONObject geometry = (JSONObject)geoJson.get("geometry");
             System.out.println("PRECINCT GEOJSON BEFORE= " + geoJson.toJSONString());
+            String before = geoJson.toJSONString();
             System.out.println();
             geometry.remove("coordinates");
             geometry.put("coordinates", parser.parse(coordinatesStr));
             geoJson.remove("geometry");
             geoJson.put("geometry", geometry);
             System.out.println("PRECINCT GEOJSON AFTER CHANGING JSONOBJECT= " + geoJson.toJSONString());
+            String after = geoJson.toJSONString();
             System.out.println();
             precinct.setGeojson(geoJson.toJSONString());
             System.out.println("AFTER SETTING= " + precinct.getGeojson());
             System.out.println();
             em.flush();
+            String[] precinctNames = new String[1];
+            precinctNames[0] = precinctName;
+            generateCorrectionData("editPrecinctBoundary", precinctNames, before, after);
 
             return "SUCCESS";
 
@@ -380,35 +399,91 @@ public class PersistenceLayer {
         }
     }
 
-    public static String generateCorrectionData(String datatype, String stateName, String [] precinctNames) {
-        DateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("The system date and time are " + format.format(cal.getTime()));
-        String comment = "";
-        switch(datatype) {
-            case "enclosed":
-                comment = precinctNames[0] + " was merged with " + precinctNames[1];
-                break;
-            case "overlapping":
-                comment = precinctNames[0] + " had its boundary edited";
-                break;
-            case "addNeighbors":
-                comment = precinctNames[0] + " and " + precinctNames[1] + "were added as neigbhors";
-                break;
-            case "removeNeighbors":
-                comment = precinctNames[0] + " and " + precinctNames[1] + "were removed as neigbhors";
-                break;
-            case "defineGhostPrecinct":
-                comment = precinctNames[0] + " was defined as a ghost precinct";
-                break;
-            case "editPrecinctBoundary":
-                comment = precinctNames[0] + " had its boundary edited";
-                break;
-            default:
-                break;
-        }
-        return format.format(cal.getTime()) + " " + comment;
+    public static String generateCorrectionData(String datatype, String [] precinctNames, String oldGeojson, String newGeojson) {
+        try {
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Calendar cal = Calendar.getInstance();
+            System.out.println("The system date and time are " + format.format(cal.getTime()));
+            String comment = "";
+            String errorType = "";
+            switch (datatype) {
+                case "enclosed":
+                    comment = precinctNames[0] + " was merged with " + precinctNames[1];
+                    errorType = "ENCLOSED";
+                    break;
+                case "overlapping":
+                    comment = precinctNames[0] + " had its boundary edited";
+                    errorType = "OVERLAPPING";
+                    break;
+                case "addNeighbors":
+                    comment = precinctNames[0] + " and " + precinctNames[1] + " were added as neigbhors";
+                    errorType = "NEIGHBORS";
+                    break;
+                case "removeNeighbors":
+                    comment = precinctNames[0] + " and " + precinctNames[1] + " were removed as neigbhors";
+                    errorType = "NEIGHBORS";
+                    break;
+                case "defineGhostPrecinct":
+                    comment = precinctNames[0] + " was defined as a ghost precinct";
+                    errorType = "MAP_COVERAGE";
+                    break;
+                case "editPrecinctBoundary":
+                    comment = precinctNames[0] + " had its boundary edited";
+                    errorType = "MAP_COVERAGE";
+                    break;
+                default:
+                    break;
+            }
+            String result = format.format(cal.getTime());
+            String[] dateAndTime = format.format(cal.getTime()).split(" ");
+            String date = dateAndTime[0];
+            String time = dateAndTime[1];
 
+            updateCorrections(precinctNames, date, time, comment, oldGeojson, newGeojson, errorType);
+            return "Success";
+        }
+        catch(Exception e) {
+            System.out.println(e.getMessage());
+            return e.getMessage();
+        }
+    }
+
+    public static String updateCorrections(String[] precinctNames, String date,
+                                           String time, String comment, String oldGeojson, String newGeoJson,
+                                           String errorType){
+
+        EntityManager em = getEntityManagerInstance();
+        try {
+            em.getTransaction().begin();
+            Correction correction = new Correction();
+            correction.setTime(Time.valueOf(time));
+            correction.setDate(Date.valueOf(date));
+            String pNames = "";
+            for(int i = 0; i < precinctNames.length; i++){
+                if(i == 1){
+                    pNames = pNames + ", " + precinctNames[i];
+                }
+                else{
+                    pNames = precinctNames[i];
+                }
+            }
+            correction.setCanonicalPrecinctNames(pNames);
+            correction.setComment(comment);
+            correction.setOldGeojson(oldGeojson);
+            correction.setNewGeojson(newGeoJson);
+            correction.setErrorType(errorType);
+
+            System.out.println(correction.toString());
+            em.persist(correction);
+            em.getTransaction().commit();
+
+            return "SUCCESS";
+
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+            return e.getMessage();
+        }
     }
 
 

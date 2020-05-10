@@ -113,13 +113,4 @@ public class AppHandler {
         return PersistenceLayer.getNationalParks();
     }
 
-    @GET
-    @Path("CorrectionTest")
-    public String generateCorrectionTest() {
-        String[] arr = new String[2];
-        arr[0] = "Precinct1";
-        arr[1] = "Precinct2";
-        return PersistenceLayer.generateCorrectionData("enclosed", "New York", arr);
-    }
-
 }

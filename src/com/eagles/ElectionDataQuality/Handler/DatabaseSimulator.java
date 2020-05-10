@@ -64,6 +64,7 @@ public class DatabaseSimulator {
             fileName = DatabaseSimulator.class.getClassLoader().getResourceAsStream("fl_overlapping.json");
         }
         else if (stateName.equals("New York")) {
+            fileName = DatabaseSimulator.class.getClassLoader().getResourceAsStream("NY_overlapping.json");
         }
         try {
             Reader reader = new InputStreamReader(fileName);

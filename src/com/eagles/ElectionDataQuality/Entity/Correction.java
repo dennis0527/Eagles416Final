@@ -8,14 +8,14 @@ import java.util.Objects;
 @Entity
 @Table(schema = "supaul", name = "CORRECTION")
 public class Correction {
-    private int errorId;
     private String comment;
     private Time time;
     private Date date;
-    private String canonicalPrecinctName;
-    private Precinct precinctByCanonicalPrecinctName;
+    private String canonicalPrecinctNames;
     private int id;
     private String errorType;
+    private String oldGeojson;
+    private String newGeojson;
 
     @Basic
     @Column(name = "comment", nullable = true, length = 255)
@@ -48,13 +48,13 @@ public class Correction {
     }
 
     @Basic
-    @Column(name = "canonical_precinct_name", nullable = true, length = 45)
-    public String getCanonicalPrecinctName() {
-        return canonicalPrecinctName;
+    @Column(name = "canonical_precinct_names", nullable = true, length = 45)
+    public String getCanonicalPrecinctNames() {
+        return canonicalPrecinctNames;
     }
 
-    public void setCanonicalPrecinctName(String canonicalPrecinctName) {
-        this.canonicalPrecinctName = canonicalPrecinctName;
+    public void setCanonicalPrecinctNames(String canonicalPrecinctName) {
+        this.canonicalPrecinctNames = canonicalPrecinctName;
     }
 
     @Override
@@ -66,22 +66,27 @@ public class Correction {
                 Objects.equals(comment, that.comment) &&
                 Objects.equals(time, that.time) &&
                 Objects.equals(date, that.date) &&
-                Objects.equals(canonicalPrecinctName, that.canonicalPrecinctName);
+                Objects.equals(errorType, that.errorType) &&
+                Objects.equals(canonicalPrecinctNames, that.canonicalPrecinctNames);
+    }
+
+    @Override
+    public String toString() {
+        return "Correction{" +
+                "comment='" + comment + '\'' +
+                ", time=" + time +
+                ", date=" + date +
+                ", canonicalPrecinctNames='" + canonicalPrecinctNames + '\'' +
+                ", id=" + id +
+                ", errorType='" + errorType + '\'' +
+                ", oldGeojson='" + oldGeojson + '\'' +
+                ", newGeojson='" + newGeojson + '\'' +
+                '}';
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, comment, time, date, canonicalPrecinctName);
-    }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "canonical_precinct_name", referencedColumnName = "canonical_name", insertable=false, updatable=false)
-    public Precinct getPrecinctByCanonicalPrecinctName() {
-        return precinctByCanonicalPrecinctName;
-    }
-
-    public void setPrecinctByCanonicalPrecinctName(Precinct precinctByCanonicalPrecinctName) {
-        this.precinctByCanonicalPrecinctName = precinctByCanonicalPrecinctName;
+        return Objects.hash(id, comment, time, date, canonicalPrecinctNames);
     }
 
     @Id
@@ -102,5 +107,25 @@ public class Correction {
 
     public void setErrorType(String errorType) {
         this.errorType = errorType;
+    }
+
+    @Basic
+    @Column(name = "old_geojson", nullable = true)
+    public String getOldGeojson() {
+        return oldGeojson;
+    }
+
+    public void setOldGeojson(String oldGeojson) {
+        this.oldGeojson = oldGeojson;
+    }
+
+    @Basic
+    @Column(name = "new_geojson", nullable = true)
+    public String getNewGeojson() {
+        return newGeojson;
+    }
+
+    public void setNewGeojson(String newGeojson) {
+        this.newGeojson = newGeojson;
     }
 }

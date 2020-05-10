@@ -11,7 +11,6 @@ public class Precinct {
     private String fullName;
     private String neighbors;
     private String canonicalStateName;
-    private Collection<Correction> correctionsByCanonicalName;
     private Demographics demographicsByCanonicalName;
     private ElectionData electionDataByCanonicalName;
     private Coordinates coordinatesByCanonicalName;
@@ -72,15 +71,6 @@ public class Precinct {
     @Override
     public int hashCode() {
         return Objects.hash(canonicalName, fullName, neighbors, canonicalStateName);
-    }
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "precinctByCanonicalPrecinctName")
-    public Collection<Correction> getCorrectionsByCanonicalName() {
-        return correctionsByCanonicalName;
-    }
-
-    public void setCorrectionsByCanonicalName(Collection<Correction> correctionsByCanonicalName) {
-        this.correctionsByCanonicalName = correctionsByCanonicalName;
     }
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "precinctByCanonicalAreaName")
