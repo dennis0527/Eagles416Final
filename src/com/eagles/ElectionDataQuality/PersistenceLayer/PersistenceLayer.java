@@ -7,6 +7,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import javax.servlet.ServletContext;
 import java.io.InputStream;
@@ -96,6 +97,10 @@ public class PersistenceLayer {
             precinctNames[1] = precinct2;
             generateCorrectionData("addNeighbors", precinctNames, null, null);
         }catch(Exception e){
+            EntityTransaction tx = em.getTransaction();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             System.out.print(e);
         }
 
@@ -117,6 +122,8 @@ public class PersistenceLayer {
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
             if (!p1Neighbors.toString().contains(precinct2)) {
+                System.out.println(p1Neighbors.toString());
+                System.out.println(precinct2);
                 return "Error: Precincts were not neighbors";
             }
             p1Neighbors.remove(p2.getCanonicalName());
@@ -124,21 +131,25 @@ public class PersistenceLayer {
             JSONObject p2JSON =  (JSONObject) parser.parse(p2.getNeighbors());
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
             if (!p2Neighbors.toString().contains(precinct1)) {
+                System.out.println(p2Neighbors.toString());
+                System.out.println(precinct1);
                 return "Error: Precincts were not neighbors";
             }
             p2Neighbors.remove(p1.getCanonicalName());
-
             em.getTransaction().begin();
-
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
-
+            em.flush();
             em.getTransaction().commit();
             String[] precinctNames = new String[2];
             precinctNames[0] = precinct1;
             precinctNames[1] = precinct2;
             generateCorrectionData("removeNeighbors", precinctNames, null, null);
         }catch(Exception e){
+            EntityTransaction tx = em.getTransaction();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             System.out.println("\n\n" + e.getMessage() + "\n\n");
             return e.getMessage();
 
@@ -214,9 +225,13 @@ public class PersistenceLayer {
             String[] precinctNames = new String[2];
             precinctNames[0] = precinct1;
             precinctNames[1] = precinct2;
-            generateCorrectionData("enclosed", precinctNames, null, null);
+//            generateCorrectionData("enclosed", precinctNames, null, null);
 
         }catch(Exception e){
+            EntityTransaction tx = em.getTransaction();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             System.out.println(e);
         }
 
@@ -406,8 +421,8 @@ public class PersistenceLayer {
     }
 
     public static String editPrecinctBoundaries(String precinctName, String coordinatesStr){
+        EntityManager em = getEntityManagerInstance();
         try {
-            EntityManager em = getEntityManagerInstance();
             Precinct precinct = em.find(Precinct.class, precinctName);
             JSONParser parser = new JSONParser();
             JSONObject geoJson = (JSONObject) parser.parse(precinct.getGeojson());
@@ -427,6 +442,7 @@ public class PersistenceLayer {
             System.out.println("AFTER SETTING= " + precinct.getGeojson());
             System.out.println();
             em.flush();
+            em.getTransaction().commit();
             String[] precinctNames = new String[1];
             precinctNames[0] = precinctName;
             generateCorrectionData("editPrecinctBoundary", precinctNames, before, after);
@@ -434,6 +450,10 @@ public class PersistenceLayer {
             return "SUCCESS";
 
         } catch (Exception e) {
+            EntityTransaction tx = em.getTransaction();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             System.out.println(e.getMessage());
             return e.getMessage();
         }
@@ -487,7 +507,7 @@ public class PersistenceLayer {
                     errorType = "NEIGHBORS";
                     break;
                 case "removeNeighbors":
-                    comment = precinctNames[0] + " and " + precinctNames[1] + " were removed as neigbhors";
+                    comment = precinctNames[0] + " and " + precinctNames[1] + " were removed as neighbors";
                     errorType = "NEIGHBORS";
                     break;
                 case "defineGhostPrecinct":
@@ -542,12 +562,16 @@ public class PersistenceLayer {
 
             System.out.println(correction.toString());
             em.persist(correction);
+            em.flush();
             em.getTransaction().commit();
 
             return "SUCCESS";
 
         } catch (Exception e) {
-            em.getTransaction().rollback();
+            EntityTransaction tx = em.getTransaction();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             e.printStackTrace();
             return e.getMessage();
         }

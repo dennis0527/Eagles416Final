@@ -89,21 +89,21 @@ public class AppHandler {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("MergePrecincts/{precinctName1}/{precinctName2}")
     public String mergePrecincts(@PathParam("precinctName1") String precinctName1, @PathParam("precinctName2") String precinctName2) {
-        return PersistenceLayer.mergePrecincts(precinctName1, precinctName2);
+        return PersistenceLayer.mergePrecincts(precinctName1.replaceAll("%20", " "), precinctName2.replaceAll("%20", " "));
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{precinctName}/Coordinates")
     public String getCoordinates(@PathParam("precinctName") String precinctName){
-        return PersistenceLayer.getPrecinctCoordinates(precinctName);
+        return PersistenceLayer.getPrecinctCoordinates(precinctName.replaceAll("%20", " "));
     }
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{precinctName}/UpdateCoordinates/")
     public String updateCoordinates(@PathParam("precinctName") String precinctName, String coordinatesStr){
-        return PersistenceLayer.editPrecinctBoundaries(precinctName, coordinatesStr);
+        return PersistenceLayer.editPrecinctBoundaries(precinctName.replaceAll("%20", " "), coordinatesStr);
     }
 
     @GET

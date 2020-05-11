@@ -211,6 +211,7 @@
                 <label class="custom-control-label" for="NationalParksCheck">Show National Parks</label>
     </div>
 </div>
+</div>
 
 <!-- <div id = "label"><button onclick="addMarker();">toggle marker mode</button></div>
 <div id = "affiliation"><button onclick="affiliation();">toggle affiliation highlight</button></div> -->
@@ -937,21 +938,21 @@
                     this._div.innerHTML = '<h4>US 2016 Presidential Election Data</h4>' + (props ?
                         '<b>' + props.name + '</b><br />' + props.election_pres[0] + '% Democrat' +
                         '<br />' + props.election_pres[1] + "% Republican"
-                        + '<h5><i>Source: US Census</i>' //dummy data to remove
+                        + '<h5><i>Source: State Board of Elections</i>' //dummy data to remove
                         : 'Hover over a state');
                 } else if (chosenElection == "2016 Congressional Election") {
                     this._div.innerHTML = '<h4>US 2016 Congressional Election Data</h4>' + (props ?
                         '<b>' + props.name + '</b><br />' + '<h5><b>Senate Data</b></h5>' +
                         props.election_senate_16[0] + '% Democrat ' +
                         props.election_senate_16[1] + "% Republican"
-                        + '<h5><i>Source: US Census</i>' //dummy data to remove
+                        + '<h5><i>Source: State Board of Elections</i>' //dummy data to remove
                         : 'Hover over a state');
                 } else if (chosenElection == "2018 Congressional Election") {
                     this._div.innerHTML = '<h4>US 2018 Congressional Election Data</h4>' + (props ?
                         '<b>' + props.name + '</b><br />' + '<h5><b>Senate Data</b></h5>' +
                         props.election_senate_18[0] + '% Democrat ' +
                         props.election_senate_18[1] + "% Republican"
-                        + '<h5><i>Source: US Census</i>' //dummy data to remove
+                        + '<h5><i>Source: State Board of Elections</i>' //dummy data to remove
                         : 'Hover over a state');
                 }
             } else if (chosenData == "Demographic Data") {
@@ -981,16 +982,24 @@
             let neighbors;
             let neighbors_url;
             let ref = this;
+            let mitSource = "MIT Election Data Science Lab";
+            let stateSource = "Board of Elections";
+            let stateString = "";
             if (props) {
                 switch (document.getElementById("state_change").value) {
                     case "1":
                         neighbors_url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/Florida/" + props.CANON_NAME + "/neighbors";
+                        stateString = " Florida ";
+                        stateSource = "Division of Elections";
                         break;
                     case "2":
                         neighbors_url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/Maryland/" + props.CANON_NAME + "/neighbors";
+                        stateString = " Maryland ";
+                        mitSource = " Maryland " + stateSource;
                         break;
                     case "3":
                         neighbors_url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/New York/" + props.CANON_NAME + "/neighbors";
+                        stateString = " New York ";
                         break;
                     default:
                 }
@@ -1021,21 +1030,21 @@
                                 '<b>' + props.CANON_NAME + '</b><br />' + 'Democrat Percent: ' + (((props.PRES16D) / (props.PRES16D + props.PRES16R)) * 100).toFixed(2) +
                                 '%' + '</b><br />' + 'Republican Percent: ' + (((props.PRES16R) / (props.PRES16D + props.PRES16R)) * 100).toFixed(2) + '%'
                                 + '<h6>Neighbors: ' + neighbors.join(', ') + '</h6>'
-                                + '<h5><i>Source: State Board of Elections</i>'
+                                + '<h5><i>Source:' + stateString + stateSource + ' </i>'
                                 : 'Hover over a precinct');
                         } else if (chosenElection == "2016 Congressional Election") {
                             ref._div.innerHTML = '<h4>2016 Congressional Election</h4>' + (props ?
                                 '<b>' + props.CANON_NAME + '</b><br />' + 'Democrat Percent: ' + (((props.USH16D) / (props.USH16D + props.USH16R)) * 100).toFixed(2) +
                                 '%' + '</b><br />' + 'Republican Percent: ' + (((props.USH16R) / (props.USH16D + props.USH16R)) * 100).toFixed(2) + '%'
                                 + '<h6>Neighbors: ' + neighbors.join(', ') + '</h6>'
-                                + '<h5><i>Source: State Board of Elections</i>'
+                                + '<h5><i>Source:' + " " + mitSource + ' </i>'
                                 : 'Hover over a precinct');
                         } else if (chosenElection == "2018 Congressional Election") {
                             ref._div.innerHTML = '<h4>2018 Congressional Election</h4>' + (props ?
                                 '<b>' + props.CANON_NAME + '</b><br />' + 'Democrat Percent: ' + (((props.USH18D) / (props.USH18D + props.USH18R)) * 100).toFixed(2) +
                                 '%' + '</b><br />' + 'Republican Percent: ' + (((props.USH18R) / (props.USH18D + props.USH18R)) * 100).toFixed(2) + '%'
                                 + '<h6>Neighbors: ' + neighbors.join(', ') + '</h6>'
-                                + '<h5><i>Source: State Board of Elections</i>'
+                                + '<h5><i>Source:' +  " " + mitSource + ' </i>'
                                 : 'Hover over a precinct');
                         }
                     }
