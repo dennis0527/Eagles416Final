@@ -56,11 +56,9 @@ public class PersistenceLayer {
             JSONObject object =  (JSONObject) parser.parse((String)query.getSingleResult());
             JSONArray neighbors = (JSONArray) object.get("neighbors");
             return neighbors.toJSONString();
-
         } catch (Exception e) {
             return e.getMessage();
         }
-
     }
 
     public static String addNeighbors(String stateName, String precinct1, String precinct2){
@@ -317,6 +315,46 @@ public class PersistenceLayer {
 
             }
             return json.toJSONString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+
+    }
+
+    public static String getMapCoverageErrors(String stateName){
+        try {
+            InputStream is = PersistenceLayer.class.getClassLoader().getResourceAsStream(propFileName);
+            props.load(is);
+            EntityManager em = getEntityManagerInstance();
+            Query query = em.createQuery("Select e from MapCoverageErrors e where e.stateName = :stateName");
+            query.setParameter("stateName", stateName);
+            List<MapCoverageErrors> errors = (List<MapCoverageErrors>) query.getResultList();
+            JSONParser parser = new JSONParser();
+            JSONObject object = (JSONObject) parser.parse(props.getProperty("mapCoverageErrors"));
+            JSONArray features = (JSONArray) object.get("mapCoverageErrors");
+
+            for(MapCoverageErrors e : errors){
+                JSONObject singleError = (JSONObject) parser.parse(props.getProperty("individualCoverageErrors"));
+                singleError.put("stateName", e.getStateName());
+                singleError.put("ghostPrecinct", e.getGhostPrecinct());
+                JSONObject coordinates = (JSONObject) singleError.get("coordinates");
+                JSONObject mapCoverageCoordinates = (JSONObject) parser.parse(e.getCoords());
+                coordinates.put("type", mapCoverageCoordinates.get("type"));
+                coordinates.put("coordinates", mapCoverageCoordinates.get("coordinates"));
+                features.add(singleError);
+            }
+            return object.toJSONString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+    }
+
+    public static String getCongressionalDistricts(){
+        try {
+            EntityManager em = getEntityManagerInstance();
+            return (em.find(District.class, "all")).getGeojson();
         } catch (Exception e) {
             e.printStackTrace();
             return e.getMessage();

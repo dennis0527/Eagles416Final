@@ -31,7 +31,7 @@ public class AppHandler {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/Districts")
     public String getDistricts(){
-        return DatabaseSimulator.getCongressionalDistricts();
+        return PersistenceLayer.getCongressionalDistricts();
     }
 
     @GET
@@ -66,7 +66,7 @@ public class AppHandler {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("MapCoverageError/{stateName}")
     public String getMapCoverageErrors(@PathParam("stateName") String state) {
-        return DatabaseSimulator.getMapCoverageErrors(state);
+        return PersistenceLayer.getMapCoverageErrors(state);
     }
 
     @POST

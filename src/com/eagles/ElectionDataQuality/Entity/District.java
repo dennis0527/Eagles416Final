@@ -13,6 +13,7 @@ public class District {
     private Demographics demographicsByCanonicalName;
     private Coordinates coordinatesByCanonicalName;
     private ElectionData electionDataByCanonicalName;
+    private String geojson;
 
     @Id
     @Column(name = "canonical_name", nullable = false, length = 45)
@@ -87,4 +88,13 @@ public class District {
         this.electionDataByCanonicalName = electionDataByCanonicalName;
     }
 
+    @Basic
+    @Column(name = "geojson", nullable = true)
+    public String getGeojson() {
+        return geojson;
+    }
+
+    public void setGeojson(String geojson) {
+        this.geojson = geojson;
+    }
 }

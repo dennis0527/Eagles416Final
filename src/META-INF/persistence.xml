@@ -18,14 +18,13 @@
         <class>com.eagles.ElectionDataQuality.Entity.AnomalousErrors</class>
         <class>com.eagles.ElectionDataQuality.Entity.EnclosedErrors</class>
         <class>com.eagles.ElectionDataQuality.Entity.OverlappingErrors</class>
+        <class>com.eagles.ElectionDataQuality.Entity.MapCoverageErrors</class>
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://mysql3.cs.stonybrook.edu:3306/supaul"/>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="javax.persistence.jdbc.user" value=""/>
             <property name="javax.persistence.jdbc.password" value=""/>
             <property name="eclipselink.ddl-generation" value="none"/>
-            <property name="eclipselink.jdbc.url" value="jdbc:mysql://mysql3.cs.stonybrook.edu:3306/supaul"/>
-            <property name="eclipselink.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <!--            <property name="eclipselink.logging.level" value="FINE"/>-->
 
         </properties>
