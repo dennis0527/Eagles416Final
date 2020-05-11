@@ -92,6 +92,13 @@ public class AppHandler {
         return PersistenceLayer.mergePrecincts(precinctName1.replaceAll("%20", " "), precinctName2.replaceAll("%20", " "));
     }
 
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("AddGhostPrecinct/{stateName}/{ghostPrecinct}")
+    public String addGhostPrecinct(@PathParam("stateName") String stateName, @PathParam("ghostPrecinct") String ghostPrecinct) {
+        return PersistenceLayer.addGhostPrecinct(stateName, ghostPrecinct);
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{precinctName}/Coordinates")

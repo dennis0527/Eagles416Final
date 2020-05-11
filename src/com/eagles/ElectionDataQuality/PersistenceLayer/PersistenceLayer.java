@@ -122,8 +122,6 @@ public class PersistenceLayer {
             JSONObject p1JSON =  (JSONObject) parser.parse(p1.getNeighbors());
             JSONArray p1Neighbors = (JSONArray) p1JSON.get("neighbors");
             if (!p1Neighbors.toString().contains(precinct2)) {
-                System.out.println(p1Neighbors.toString());
-                System.out.println(precinct2);
                 return "Error: Precincts were not neighbors";
             }
             p1Neighbors.remove(p2.getCanonicalName());
@@ -131,8 +129,6 @@ public class PersistenceLayer {
             JSONObject p2JSON =  (JSONObject) parser.parse(p2.getNeighbors());
             JSONArray p2Neighbors = (JSONArray) p2JSON.get("neighbors");
             if (!p2Neighbors.toString().contains(precinct1)) {
-                System.out.println(p2Neighbors.toString());
-                System.out.println(precinct1);
                 return "Error: Precincts were not neighbors";
             }
             p2Neighbors.remove(p1.getCanonicalName());
@@ -155,11 +151,14 @@ public class PersistenceLayer {
 
         }
 
-        return "Success: Neighbors were added";
+        return "Success: Neighbors were removed";
     }
 
     public static String mergePrecincts(String precinct1, String precinct2){
         EntityManager em = getEntityManagerInstance();
+
+        //removeNeighbors("Maryland", precinct1, precinct2);
+
         JSONParser parser = new JSONParser();
         GeoJsonReader reader = new GeoJsonReader();
 
@@ -306,6 +305,72 @@ public class PersistenceLayer {
             return e.getMessage();
         }
 
+    }
+
+    public static String addGhostPrecinct(String stateName, String ghostPrecinctString){
+        EntityManager em = getEntityManagerInstance();
+
+        ghostPrecinctString = ghostPrecinctString.replace("Ghost Precinct ", "");
+        int ghostPrecinct = Integer.parseInt(ghostPrecinctString);
+
+        System.out.println(ghostPrecinct);
+
+        JSONParser parser = new JSONParser();
+        GeoJsonReader reader = new GeoJsonReader();
+
+        Query gQuery = em.createQuery("Select g from GhostPrecinct g where g.id = " + ghostPrecinct + "");
+        GhostPrecinct g = (GhostPrecinct) gQuery.getSingleResult();
+
+        String gCoordsString = g.getCoords();
+
+        System.out.println(gCoordsString);
+
+        try{
+            JSONObject gJSON =  (JSONObject) parser.parse(gCoordsString);
+
+            Geometry gGeom = reader.read(gJSON.toJSONString());
+
+            gGeom = mergeHelpers.validate(gGeom);
+
+            Polygon gPolygon = new GeometryFactory().createPolygon(gGeom.getCoordinates());
+
+            String json = mergeHelpers.createCoordsJson(gPolygon.getCoordinates());
+
+            JSONObject coordsJson = (JSONObject) parser.parse(json);
+
+            JSONObject blankGeoJson =  (JSONObject) parser.parse(g.getBlankGeojson());
+            blankGeoJson.remove("geometry");
+            blankGeoJson.put("geometry", coordsJson);
+
+            JSONObject gProps = (JSONObject) blankGeoJson.get("properties");
+            gProps.remove("STATE");
+            gProps.put("STATE", stateName);
+            gProps.remove("CANON_NAME");
+            gProps.put("CANON_NAME", "GhostPrecinct" + g.getId());
+
+
+            em.getTransaction().begin();
+            Coordinates coordinates = new Coordinates();
+            coordinates.setCanonicalName("GhostPrecinct" + g.getId());
+            coordinates.setCoords(gCoordsString);
+            coordinates.setPolygonType("Polygon");
+            em.persist(coordinates);
+
+            Precinct precinct = new Precinct();
+            precinct.setCanonicalName("GhostPrecinct" + g.getId());
+            precinct.setFullName("" + g.getId());
+            precinct.setNeighbors("{\"neighbors\": []}");
+            precinct.setCanonicalStateName(props.getProperty(stateName));
+            precinct.setGeojson(blankGeoJson.toJSONString());
+            em.persist(precinct);
+
+        }catch(Exception e){
+            System.out.println(e);
+        }
+
+        em.flush();
+
+        return "SUCCESS MERGE";
     }
 
     public static String getOverlappingPrecinctErrors(String stateName){

@@ -89,6 +89,7 @@
                                     <option value="6">Show precincts with an excess of voters</option>
                                     <option value="7">Show precincts with no voting data</option>
                                     <option value="8">Show overlapping precincts</option>
+                                    <option value="9">Show ghost precincts</option>
                                 </select>
                             </div>
                             <p></p>
@@ -513,17 +514,25 @@
         let url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/" + precinctName + "/Coordinates";
         $('#loader').addClass("loader").removeClass("hide-loader");
         $.get(url, function (data, status) {
-            let numEmptyArrs = 0;
-            let arr = data.coordinates;
-            while (arr.length == 1) {
-                numEmptyArrs = numEmptyArrs + 1;
-                arr = arr[0];
+            try {
+                let numEmptyArrs = 0;
+                let arr = data.coordinates;
+                while (arr.length == 1) {
+                    numEmptyArrs = numEmptyArrs + 1;
+                    arr = arr[0];
+                }
+                console.log(data.coordinates);
+                let dataFixed = L.GeoJSON.coordsToLatLngs(data.coordinates, numEmptyArrs);
+                polyline = L.polyline(dataFixed, {color: 'black'}).addTo(map);
+                polyline.enableEdit();
+                map.fitBounds(polyline.getBounds());
+                $('#loader').addClass("hide-loader").removeClass("loader");
             }
-            let dataFixed = L.GeoJSON.coordsToLatLngs(data.coordinates, numEmptyArrs);
-            polyline = L.polyline(dataFixed, {color: 'black'}).addTo(map);
-            polyline.enableEdit();
-            map.fitBounds(polyline.getBounds());
-            $('#loader').addClass("hide-loader").removeClass("loader");
+            catch(err) {
+                alert("Error: Cannot change boundary of multipolygon");
+                $('#loader').addClass("hide-loader").removeClass("loader");
+            }
+
         });
     }
 
@@ -599,13 +608,23 @@
         if (document.getElementById('GhostPrecinctName').innerHTML == "<b>Precinct Selected: </b>None") {
             alert("Please select a precinct");
         } else {
-            alert((document.getElementById('GhostPrecinctName').innerHTML).replace("<b>Precinct Selected: </b>", "") + " added as ghost precinct");
-            document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
-            document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
-            document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
-            document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
-            document.getElementById('AddPrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
-            document.getElementById('AddPrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>None";
+            let e = document.getElementById("correction-state");
+            let chosenState = e.options[e.selectedIndex].text;
+
+            let url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AddGhostPrecinct/" +
+                chosenState + "/" + (document.getElementById('GhostPrecinctName').innerHTML).replace("<b>Precinct Selected: </b>", "");
+
+            console.log(url);
+
+            let error = document.getElementById('ErrorSelected').innerHTML;
+
+            $.post(url, function (data, status) {
+                alert(status);
+                alterStyleData();
+                markerDeselect();
+                clearMarker(error);
+                document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
+            });
         }
     }
 
@@ -618,8 +637,6 @@
                 (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
 
             let error = document.getElementById('ErrorSelected').innerHTML;
-
-            console.log(url);
 
             $.post(url, function (data, status) {
                 alert(status);
@@ -664,8 +681,6 @@
         if (document.getElementById('AddPrecinctNameTwo').innerHTML == "<b>Second Precinct Selected: </b>None") {
             alert("Please select both precincts");
         } else {
-
-            console.log(url);
 
             $.post(url, function (data, status) {
                 alert(data);
@@ -1128,16 +1143,23 @@ was posted.
             temp = temp.substring(temp.indexOf(":"), temp.length);    //go past "Error X:"
             temp = temp.replace(":<br>Enclosed precinct: ", "");
             let temp2 = temp;
-            console.log(temp2);
+
             temp = temp.substring(0, temp.indexOf(","));
 
             temp2 = temp2.substring(temp2.indexOf(","), temp2.length);
             temp2 = temp2.replace(",<br>enclosing precinct: ", "");
-            console.log(temp2);
 
             document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>" + temp;
             document.getElementById('CombinePrecinctNameTwo').innerHTML = "<b>Second Precinct Selected: </b>" + temp2;
             $('#MergePrecinctLink')[0].click();
+        } else if(document.getElementById("correction-list").selectedIndex == 9){
+            temp = temp.substring(temp.indexOf(":")+1, temp.length);    //go past "Selected Error:"
+            temp = temp.substring(temp.indexOf(":"), temp.length);
+            temp = temp.replace(":<br>", "");
+
+            document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>" + temp;
+
+            $('#GhostPrecinctLink')[0].click();
         }
 
         // document.getElementById("correction-state").selectedIndex = 0;
@@ -1146,7 +1168,7 @@ was posted.
     }
 
     let markers = new L.LayerGroup();
-    let id;
+    let id = 1;
 
     function changeCorrection() {
         let e = document.getElementById("correction-list");
@@ -1162,9 +1184,11 @@ was posted.
 
         if (chosenElection == "2016 Presidential Election") {
             election = "_presidential_2016";
-        } else if (chosenElection == "2016 Congressional Election") {
+        }
+        if (chosenElection == "2016 Congressional Election") {
             election = "_congressional_2016";
-        } else if (chosenElection == "2018 Congressional Election") {
+        }
+        if (chosenElection == "2018 Congressional Election") {
             election = "_congressional_2018";
         }
 
@@ -1199,8 +1223,15 @@ was posted.
                 createErrorMarkers(data.mapCoverageErrors, election, "coverage");
                 $('#loader').addClass("hide-loader").removeClass("loader");
             });
-        }
-        else {
+        } else if (chosenCorrection == "Show ghost precincts") {
+            url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/MapCoverageError/" + chosenState;
+
+            $('#loader').addClass("loader").removeClass("hide-loader");
+            $.get(url, function (data, status) {
+                createErrorMarkers(data.mapCoverageErrors, election, "ghost");
+                $('#loader').addClass("hide-loader").removeClass("loader");
+            });
+        }else {
             map.removeLayer(markers);
         }
     }
@@ -1246,10 +1277,19 @@ was posted.
                 if(data[i].ghostPrecinct == "False"){
                     label = label + "Gap";
                 }else{
-                    label = label + "Ghost Precinct";
+                    continue;
+                }
+                unchanged = false;
+            } else if (errorType == "ghost") {
+                if(data[i].ghostPrecinct == "True"){
+                    label = label + "Ghost Precinct " + id;
+                    id++;
+                }else{
+                    continue;
                 }
                 unchanged = false;
             }
+
             if (!unchanged) {
                 try {
                     if (errorType == "overlapping") {
@@ -1258,14 +1298,7 @@ was posted.
                             "coordinates": data[i].geometry.coordinates
                         });
                         markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
-                    } else if (errorType == "coverage"){
-                        temp = L.geoJson({
-                            "type": data[i].coordinates.type,
-                            "coordinates": data[i].coordinates.coordinates
-                        });
-                        markerLocation = new L.LatLng(parseFloat(temp.getBounds().getCenter().lat), parseFloat(temp.getBounds().getCenter().lng));
-                    }
-                    else {
+                    } else {
                         temp = L.geoJson({
                             "type": data[i].coordinates.type,
                             "coordinates": data[i].coordinates.coordinates
@@ -1383,7 +1416,11 @@ was posted.
             document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error;
         } else if (chosenCorrection == "Show overlapping precincts") {
             document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error;
-        } else {
+        } else if (chosenCorrection == "Show gaps in precincts") {
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error;
+        } else if (chosenCorrection == "Show ghost precincts") {
+            document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>" + error;
+        }else {
             return;
         }
     }
