@@ -361,7 +361,7 @@ public class PersistenceLayer {
             precinct.setCanonicalName("GhostPrecinct" + g.getId());
             precinct.setFullName("" + g.getId());
             precinct.setNeighbors("{\"neighbors\": []}");
-            precinct.setCanonicalStateName(props.getProperty(stateName));
+            precinct.setCanonicalStateName(props.getProperty(stateName.replaceAll(" ", "")));
             precinct.setGeojson(blankGeoJson.toJSONString());
             em.persist(precinct);
             em.flush();

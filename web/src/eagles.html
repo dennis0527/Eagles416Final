@@ -101,10 +101,10 @@
                     <button type="button" class="btn btn-info pull-left" onclick=correctionSubmitted()>Submit</button>
                     </div>
                     <div class="row" style="margin-top: 10px; margin-left: 0px;">
-                    <button type="button" class="btn btn-info pull-left">Remove Marker</button>
+                    <button type="button" class="btn btn-info pull-left" onclick=clearMarker()>Remove Marker</button>
                     </div>
                     <div class="row" style="margin-top: 10px; margin-left: 0px;">
-                    <button type="button" class="btn btn-info pull-left">Clear Markers From Map</button>
+                    <button type="button" class="btn btn-info pull-left" onclick=markers.clearLayers()>Clear Markers From Map</button>
                     </div>
 
                 </div>
@@ -665,8 +665,6 @@
 
             console.log(url);
 
-            let error = document.getElementById('ErrorSelected').innerHTML;
-
             $.post(url, function (data, status) {
                 // alert(status);
                 if (status.includes("Error")) {
@@ -676,8 +674,7 @@
                     $('#alertGhostSuccess').show()
                 }
                 alterStyleData();
-                markerDeselect();
-                clearMarker(error);
+                clearMarker();
                 document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             });
         }
@@ -691,8 +688,6 @@
                 (document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
                 (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
 
-            let error = document.getElementById('ErrorSelected').innerHTML;
-
             $.post(url, function (data, status) {
                 if(status.includes("Error")) {
                     $('#alertMergeWarning').show()
@@ -701,8 +696,7 @@
                     $('#alertMergeSuccess').show()
                 }
                 alterStyleData();
-                markerDeselect();
-                clearMarker(error);
+                clearMarker();
                 document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>None";
             });
 
@@ -1237,7 +1231,6 @@ was posted.
     }
 
     let markers = new L.LayerGroup();
-    let id = 1;
 
     function changeCorrection() {
         let e = document.getElementById("correction-list");
@@ -1307,12 +1300,24 @@ was posted.
 
     function createErrorMarkers(data, election, errorType) {
         markers.clearLayers();
+        let id = 1;
+
+        let e = document.getElementById("correction-state");
+        let chosenState = e.options[e.selectedIndex].text;
+
+        if(chosenState == "Florida"){
+            id = 1;
+        }
+        if(chosenState == "New York"){
+            id = 21;
+        }
+
         let temp;
         let markerLocation;
         let marker;
 
-        let e = document.getElementById("correction-list");
-        let chosenCorrection = e.options[e.selectedIndex].text;
+        let e2 = document.getElementById("correction-list");
+        let chosenCorrection = e2.options[e.selectedIndex].text;
         for (i in data) {
             let label = "Error " + i + ":<br>";
             let unchanged = true;
@@ -1398,9 +1403,12 @@ was posted.
         }
     }
 
-    function clearMarker(error) {
+    function clearMarker() {
+        let error = document.getElementById('ErrorSelected').innerHTML;
         error = error.substring(error.indexOf(":"), error.length);
         error = error.substring(6, error.length);
+
+        markerDeselect();
 
         markers.eachLayer(function (layer) {
             let tooltip = layer._tooltip._content;
