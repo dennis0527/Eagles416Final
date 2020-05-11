@@ -232,6 +232,7 @@ public class PersistenceLayer {
                 tx.rollback();
             }
             System.out.println(e);
+            return "Error Merge";
         }
 
         em.flush();
@@ -366,6 +367,7 @@ public class PersistenceLayer {
 
         }catch(Exception e){
             System.out.println(e);
+            return "Error";
         }
 
         em.flush();

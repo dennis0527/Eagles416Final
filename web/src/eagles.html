@@ -97,8 +97,16 @@
                             <button type="button" class="btn btn-info pull-left" onclick = markerDeselect()>Remove Error Selection</button>
                         </div>
                     </div>
-                    <br>
+                    <div class="row" style="margin-top: 10px; margin-left: 0px;">
                     <button type="button" class="btn btn-info pull-left" onclick=correctionSubmitted()>Submit</button>
+                    </div>
+                    <div class="row" style="margin-top: 10px; margin-left: 0px;">
+                    <button type="button" class="btn btn-info pull-left">Remove Marker</button>
+                    </div>
+                    <div class="row" style="margin-top: 10px; margin-left: 0px;">
+                    <button type="button" class="btn btn-info pull-left">Clear Markers From Map</button>
+                    </div>
+
                 </div>
 <div id="GhostPrecinctTab" class="tab-pane fade">
     <div id="InnerGhostPrecinct" style="display: none;">
@@ -108,6 +116,14 @@
         <button id="GhostPrecinctButton" type="button" class="btn btn-info pull-center" onclick=submitGhostPrecinct()>
             Submit
         </button>
+        <div id = "alertGhostSuccess" class="alert alert-success alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Ghost precinct added successfully.
+        </div>
+        <div id = "alertGhostWarning" class="alert alert-warning alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Error: Operation must be done on a ghost precinct.
+        </div>
     </div>
     <h3 id="WarningGhostPrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
@@ -120,6 +136,14 @@
         <button id="CombinePrecinctButton" type="button" class="btn btn-info pull-center"
                 onclick=submitMergePrecinct()>Submit
         </button>
+        <div id = "alertMergeSuccess" class="alert alert-success alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Precincts successfully merged.
+        </div>
+        <div id = "alertMergeWarning" class="alert alert-warning alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            These precincts cannot be merged because at least one is a multipolygon.
+        </div>
     </div>
     <h3 id="WarningCombinePrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
@@ -138,6 +162,14 @@
         <button id="CancelBoundaryButton" type="button" class="btn btn-info pull-center" onclick="cancelBoundaryCoordinates()">
             Cancel Boundary Edit
         </button>
+        <div id = "alertEditBoundarySuccess" class="alert alert-success alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Precinct boundary edited successfully.
+        </div>
+        <div id = "alertEditBoundaryWarning" class="alert alert-warning alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Cannot edit boundary of a multipolygonal precinct.
+        </div>
     </div>
     <h3 id="WarningChangePrecinctBoundary" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
@@ -153,6 +185,18 @@
         <button id="RemovePrecinctButton" type="button" class="btn btn-info pull-center" onclick=submitAddPrecinct(1)>
             Remove
         </button>
+        <div id = "alertAddNeighborsSuccess" class="alert alert-success alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Neighbors successfully added.
+        </div>
+        <div id = "alertRemoveNeighborsSuccess" class="alert alert-success alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            Neighbors successfully removed.
+        </div>
+        <div id = "alertNeighborsWarning" class="alert alert-warning alert-dismissable" style="display: none; margin-top: 10px">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            This operation cannot apply to these precincts (Cannot add already-existing neighbors or remove non-existing neighbors)
+        </div>
     </div>
     <h3 id="WarningAddPrecinct" style="display: block;">Please select the precinct view to enable this option.</h3>
 </div>
@@ -206,7 +250,7 @@
 <div class="row" style="margin-top: 10px;">
 </div>
 <div>
-    <div class="custom-control custom-checkbox" style="padding-left: 5px; padding-top: 15px;">
+    <div class="custom-control custom-checkbox" style="padding-top: 15px;">
                 <input type="checkbox"   class="custom-control-input" id="NationalParksCheck"
                        onclick="addNationalParkLayer()">
                 <label class="custom-control-label" for="NationalParksCheck">Show National Parks</label>
@@ -526,11 +570,14 @@
                 polyline = L.polyline(dataFixed, {color: 'black'}).addTo(map);
                 polyline.enableEdit();
                 map.fitBounds(polyline.getBounds());
+                // $('#alertEditBoundarySuccess').show()
                 $('#loader').addClass("hide-loader").removeClass("loader");
             }
             catch(err) {
-                alert("Error: Cannot change boundary of multipolygon");
+                // alert("Error: Cannot change boundary of multipolygon");
+                $('#alertEditBoundaryWarning').show()
                 $('#loader').addClass("hide-loader").removeClass("loader");
+                map.removeLayer(polyline);
             }
 
         });
@@ -576,7 +623,9 @@
         }
         map.removeLayer(polyline);
         $.post("http://localhost:8080/election_data_quality_eagles_war_exploded/app/" + precinctName + "/UpdateCoordinates", result, function (data, status) {
-            alert("Coordinates have been updated");
+            // alert("Coordinates have been updated");
+            $('#alertEditBoundarySuccess').show()
+
             alterStyleData();
         });
     }
@@ -619,7 +668,13 @@
             let error = document.getElementById('ErrorSelected').innerHTML;
 
             $.post(url, function (data, status) {
-                alert(status);
+                // alert(status);
+                if (status.includes("Error")) {
+                    $('#alertGhostWarning').show()
+                }
+                else {
+                    $('#alertGhostSuccess').show()
+                }
                 alterStyleData();
                 markerDeselect();
                 clearMarker(error);
@@ -639,7 +694,12 @@
             let error = document.getElementById('ErrorSelected').innerHTML;
 
             $.post(url, function (data, status) {
-                alert(status);
+                if(status.includes("Error")) {
+                    $('#alertMergeWarning').show()
+                }
+                else {
+                    $('#alertMergeSuccess').show()
+                }
                 alterStyleData();
                 markerDeselect();
                 clearMarker(error);
@@ -659,7 +719,7 @@
         let e = document.getElementById("state_change");
         let chosenState = e.options[e.selectedIndex].text;
         let url = "";
-
+        let alertId = '#alertAddNeighborsSuccess'
         if(spec == 0){
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/AddNeighbors/" + chosenState + "/" +
                 (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
@@ -667,6 +727,7 @@
 
             alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
                 (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were made into neighbors");
+            alertId = '#alertAddNeighborsSuccess'
 
         }else{
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/RemoveNeighbors/" + chosenState + "/" +
@@ -675,6 +736,8 @@
 
             alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
                 (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " are no longer neighbors");
+            alertId = '#alertRemoveNeighborsSuccess'
+
 
         }
 
@@ -683,7 +746,13 @@
         } else {
 
             $.post(url, function (data, status) {
-                alert(data);
+                if (data.includes("Error")) {
+                    $('#alertNeighborsWarning').show()
+                }
+                else {
+                    $(alertId).show()
+                }
+                // alert(data);
             });
             document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
