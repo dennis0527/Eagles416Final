@@ -364,13 +364,18 @@ public class PersistenceLayer {
             precinct.setCanonicalStateName(props.getProperty(stateName));
             precinct.setGeojson(blankGeoJson.toJSONString());
             em.persist(precinct);
+            em.flush();
+            em.getTransaction().commit();
 
         }catch(Exception e){
+            EntityTransaction tx = em.getTransaction();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             System.out.println(e);
             return "Error";
         }
 
-        em.flush();
 
         return "SUCCESS MERGE";
     }
