@@ -706,8 +706,8 @@
                 document.getElementById('ErrorSelected').innerHTML = "<b>Error Selected: </b>None";
             });
 
-            alert((document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
-                (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were combined");
+            // alert((document.getElementById('CombinePrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
+            //     (document.getElementById('CombinePrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were combined");
             document.getElementById('GhostPrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             document.getElementById('ChangePrecinctName').innerHTML = "<b>Precinct Selected: </b>None";
             document.getElementById('CombinePrecinctNameOne').innerHTML = "<b>First Precinct Selected: </b>None";
@@ -725,18 +725,18 @@
                 (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
                 (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
 
-            alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
-                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were made into neighbors");
-            alertId = '#alertAddNeighborsSuccess'
+            // alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
+            //     (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " were made into neighbors");
+            // alertId = '#alertAddNeighborsSuccess'
 
         }else{
             url = "http://localhost:8080/election_data_quality_eagles_war_exploded/app/RemoveNeighbors/" + chosenState + "/" +
                 (document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + "/" +
                 (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "");
 
-            alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
-                (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " are no longer neighbors");
-            alertId = '#alertRemoveNeighborsSuccess'
+            // alert((document.getElementById('AddPrecinctNameOne').innerHTML).replace("<b>First Precinct Selected: </b>", "") + " and " +
+            //     (document.getElementById('AddPrecinctNameTwo').innerHTML).replace("<b>Second Precinct Selected: </b>", "") + " are no longer neighbors");
+            // alertId = '#alertRemoveNeighborsSuccess'
 
 
         }
