@@ -221,8 +221,8 @@ public class PersistenceLayer {
             System.out.println("Precinct 1 GeoJSON AFTER: " + p1.getGeojson());
 
             Query deleteQuery = em.createQuery("Delete from Precinct p where p.canonicalName = " + "\"" + precinct2 + "\"");
-            deleteQuery.executeUpdate();
-            String[] precinctNames = new String[2];
+            deleteQuery.executeUpdate();            String[] precinctNames = new String[2];
+
             precinctNames[0] = precinct1;
             precinctNames[1] = precinct2;
             em.flush();
