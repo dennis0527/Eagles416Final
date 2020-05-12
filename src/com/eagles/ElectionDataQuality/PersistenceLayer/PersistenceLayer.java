@@ -91,6 +91,7 @@ public class PersistenceLayer {
             p1.setNeighbors(p1JSON.toJSONString());
             p2.setNeighbors(p2JSON.toJSONString());
             em.flush();
+
             em.getTransaction().commit();
             String[] precinctNames = new String[2];
             precinctNames[0] = precinct1;
@@ -157,7 +158,7 @@ public class PersistenceLayer {
     public static String mergePrecincts(String precinct1, String precinct2){
         EntityManager em = getEntityManagerInstance();
 
-        //removeNeighbors("Maryland", precinct1, precinct2);
+        removeNeighbors("Maryland", precinct1, precinct2);
 
         JSONParser parser = new JSONParser();
         GeoJsonReader reader = new GeoJsonReader();
@@ -224,7 +225,9 @@ public class PersistenceLayer {
             String[] precinctNames = new String[2];
             precinctNames[0] = precinct1;
             precinctNames[1] = precinct2;
-//            generateCorrectionData("enclosed", precinctNames, null, null);
+            em.flush();
+            em.getTransaction().commit();
+            generateCorrectionData("enclosed", precinctNames, null, null);
 
         }catch(Exception e){
             EntityTransaction tx = em.getTransaction();
@@ -235,7 +238,6 @@ public class PersistenceLayer {
             return "Error Merge";
         }
 
-        em.flush();
 
         return "SUCCESS MERGE";
     }
